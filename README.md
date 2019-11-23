@@ -7,11 +7,13 @@ This project is not complete just yet, but welcome feedback and contributors.
 # Quick Setup #
 
 Download this Pre-Configured ISO for Raspberrian with PiKiln and all the dependancies installed.
+
 (There would be a link here if this project were finished)
 
 Write the ISO to your MicroSD card and insert it into your Raspberry Pi
 
 I prefer to use Win32DiskImager on Windows to write the image:
+
 https://sourceforge.net/projects/win32diskimager/
 
 Plug your Raspberry Pi in and connect to your Wifi network.
@@ -38,14 +40,16 @@ Enter that IP address in your web browser on your phone or computer to access yo
 	* Two 40 Amp Solid State Relays
 	* 100A 50ma Non Invasive Current Sensor
 	* ADC ADS1115 Module
-	* Kiln
+	* Electric Kiln
 
 ## Software Setup ##
 
-Install NOOBS or latest Raspberrian ISO and write to MicroSD card
+Install NOOBS or latest Raspbian ISO and write to MicroSD card
+
 https://www.raspberrypi.org/downloads/
 
 I prefer to use Win32DiskImager on Windows to write the image:
+
 https://sourceforge.net/projects/win32diskimager/
 
 After the image is written to the MicroSD card eject it and insert it into the Raspberry Pi. Plug in the Raspberry Pi and wait for the installation to complete.
@@ -57,6 +61,7 @@ Connect your Raspberry Pi to your Wifi network
 Open Terminal and run these commands to update your Raspberry Pi:
 
 `sudo apt-get update
+
 sudo apt-get upgrade -y`
 
 Reboot your Raspberry Pi
@@ -69,29 +74,31 @@ We need to change some settings on the Raspberry Pi
 
 Go to:
 
-Home > Settings > Raspberry Pi Configuration
+* Home > Settings > Raspberry Pi Configuration
 
 Get rid of black overscan edges
-System > Overscan = Disable
+* System > Overscan = Disable
 
 ### Enable SSH & VNC for remote access ###
-Interfaces > SSH = Enable
-Interfaces > VNC = Enable
+* Interfaces > SSH = Enable
+* Interfaces > VNC = Enable
 
 ### Enable SPI, I2C, Serial Port, Serial Console, 1-Wire, and GPIO for sensors ###
-Interfaces > SPI = Enable
-Interfaces > I2C = Enable
-Interfaces > Serial Port = Enable
-Interfaces > Serial Console = Enable
-Interfaces > 1-Wire = Enable
-Interfaces > GPIO = Enable
+* Interfaces > SPI = Enable
+* Interfaces > I2C = Enable
+* Interfaces > Serial Port = Enable
+* Interfaces > Serial Console = Enable
+* Interfaces > 1-Wire = Enable
+* Interfaces > GPIO = Enable
 
 ## Install Dependencies ##
 
 Install PIP, Flask, and Git
 
 `sudo apt-get install python-pip -y
+
 sudo pip install flask -y
+
 sudo apt-get install git -y`
 
 Download latest release of PiKiln

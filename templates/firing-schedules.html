@@ -11,7 +11,7 @@
   <main role="main" class="flex-shrink-0">
     <div class="container">
 
-        <div class="row mt-4">
+        <div class="row">
           <div class="col-12">
             <h2>Edit Firing Schedule:</h2>
             <select class="custom-select" id="fireScheduleList" name="fireScheduleList">
@@ -60,12 +60,22 @@
 
         <button id="btn-save-schedule" class="btn mb-2 full-width2 btn-primary"><i class="fas fa-save"></i> Save Schedule</button>
       
+        <button class="btn mb-2 full-width2 btn-light" data-toggle="collapse" data-target="#coneChart" aria-expanded="false" aria-controls="coneChart"><i class="fas fa-table"></i> Cone Chart</button>
+
         <button data-toggle="modal" data-target="#delete-confirm-modal" id="btn-delete-schedule-modal" class="btn mb-2 full-width2 btn-danger float-right"><i class="fas fa-trash"></i> Delete Schedule</button>
         </div>
         <div id="alert-container" class="col-12"></div>
       
       </div>
 
+
+      <div class="row">
+        <div class="collapse col-12" id="coneChart">
+          <div class="card card-body">
+              {% include 'cone-chart.html' %}
+          </div>
+        </div>
+      </div>
       
 
     </div>

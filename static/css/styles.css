@@ -18,6 +18,13 @@ tr td:first-child {
     counter-increment: rowCounter;
 }
 
+.cone-row td:nth-child(3),
+.cone-row th:nth-child(3),
+.cone-row td:nth-child(5),
+.cone-row th:nth-child(5){
+    display: none;
+}
+
 td:first-child::before {
     content: counter(rowCounter);
 }

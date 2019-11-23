@@ -12,7 +12,7 @@
     <main role="main" class="flex-shrink-0 mb-4">
         <div class="container">
             <form id="form-settings">
-                <h4 class="mt-4">Settings</h4>
+                <h2>Settings</h2>
                 <div class="form-group">
 
                     <!--Timezone-->
@@ -35,18 +35,18 @@
                                 <label class="form-check-label" for="tempRadios2">Fahrenheit (°F)</label>
                             </div>
                         </div>
-                        <small id="maxTempHelp" class="form-text text-muted col-12">Temperatures are internally stored in Celsius (°C)</small>
+                        <small id="maxTempHelp" class="form-text text-muted col-12">Any new firing schedules will default to this</small>
                     </div>
 
                     <!--Max Temperature-->
-                    <div class="form-group mt-2">
-                        <label for="maxTemp">Alarm Max Temperature</label>
+                    <div class="form-group mt-3">
+                        <label class="degrees" for="maxTemp">Alarm Max Temperature <span id="max-temp-degrees"></span></label>
                         <input type="number" min="1" max="3000" class="form-control" name="max-temp" id="max-temp" aria-describedby="max-temp" placeholder="2500">
                         <small id="maxTempHelp" class="form-text text-muted">Shuts off kiln if temperature exceeded</small>
                     </div>
 
                     <!--Electricity Cost-->
-                    <div class="form-group">
+                    <div class="form-group mt-1">
                         <label for="maxTemp">Electricity Cost Per Kilowatt</label>
                         <input type="number" step="0.01" class="form-control" name="cost" id="cost" placeholder="0.14">
                     </div>

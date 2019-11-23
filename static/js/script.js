@@ -2,9 +2,9 @@ const $TABLE = $('#table');
 const $BTN = $('#export-btn');
 const $EXPORT = $('#export');
 
- var editSchedule;
+var editSchedule;
 
- const newTr = `
+const newTr = `
 <tr class="segment-row hide">
     <td></td>
     <td class="numbersOnly" contenteditable="true">50</td>
@@ -19,22 +19,23 @@ const $EXPORT = $('#export');
     </td>
 </tr>`;
 
-$('#btn-add-segment').click( function() {
-   const $clone = $TABLE.find('tbody tr').last().clone(true).removeClass('hide table-line');
+$('#btn-add-segment').click(function () {
+  const $clone = $TABLE.find('tbody tr').last().clone(true).removeClass('hide table-line');
 
-   if ($TABLE.find('tbody tr').length === 0) {
+  if ($TABLE.find('tbody tr').length === 0) {
 
-     $('tbody').append(newTr);
-   }
+    $('tbody').append(newTr);
+  }
 
-   $TABLE.find('table').append($clone);
- });
+  $TABLE.find('table').append($clone);
+});
 
 $('#btn-save-schedule').click(function () {
   console.log("Schedule Saved");
 
   var newSchedule = new Object();
   newSchedule.name = $('#schedule-title').text();
+  newSchedule.units = loadedUnits;
   newSchedule.path = editSchedule;
   newSchedule.segments = [];
 
@@ -44,7 +45,7 @@ $('#btn-save-schedule').click(function () {
   var saveTemp;
   var saveHold;
 
-  $("td").each(function(){
+  $(".segment-row td").each(function () {
     console.log($(this).html());
     console.log(index % 6);
 
@@ -56,7 +57,7 @@ $('#btn-save-schedule').click(function () {
     }
     if (index % 6 == 3) {
       saveHold = parseInt($(this).text());
-      newSchedule.segments.push({rate: saveRate, temp: saveTemp, hold: saveHold});
+      newSchedule.segments.push({ rate: saveRate, temp: saveTemp, hold: saveHold });
     }
     index++;
   });
@@ -81,21 +82,21 @@ $('#btn-save-schedule').click(function () {
     }
   });
 
-  
+
 
 });
 
-$('#btn-delete-schedule').click( function() {
+$('#btn-delete-schedule').click(function () {
   console.log("Schedule Deleted");
 
-  if(editSchedule == null){
+  if (editSchedule == null) {
     return;
   }
 
   $.ajax({
     url: 'api/delete-schedule?schedulePath=' + editSchedule,
     type: 'DELETE',
-    success: function(result) {
+    success: function (result) {
       console.log(result);
       $("#fireScheduleList").val("select-schedule").change();
       $("#fireScheduleList option[value='" + editSchedule + "']").remove();
@@ -104,16 +105,16 @@ $('#btn-delete-schedule').click( function() {
       $("#schedule-group").addClass('d-none');
 
       editSchedule = null;
-      
-        // Do something with the result
+
+      // Do something with the result
     }
   });
 
 });
 
-$('#btn-create-schedule').click( function() {
+$('#btn-create-schedule').click(function () {
   console.log("Schedule Created");
-  $.post( "api/create-schedule", function( data ) {
+  $.post("api/create-schedule", function (data) {
     console.log(data);
     var newScheduleOption = '<option value="' + data + '">' + 'Untitled Schedule' + '</option>'
     $('#fireScheduleList').html($('#fireScheduleList').html() + newScheduleOption);
@@ -122,148 +123,152 @@ $('#btn-create-schedule').click( function() {
   });
 });
 
- $TABLE.on('click', '.table-remove', function () {
+$TABLE.on('click', '.table-remove', function () {
 
-   $(this).parents('tr').detach();
- });
+  $(this).parents('tr').detach();
+});
 
- $TABLE.on('click', '.table-up', function () {
+$TABLE.on('click', '.table-up', function () {
 
-   const $row = $(this).parents('tr');
+  const $row = $(this).parents('tr');
 
-   if ($row.index() === 0) {
-     return;
-   }
+  if ($row.index() === 0) {
+    return;
+  }
 
-   $row.prev().before($row.get(0));
- });
+  $row.prev().before($row.get(0));
+});
 
- $TABLE.on('click', '.table-down', function () {
+$TABLE.on('click', '.table-down', function () {
 
-   const $row = $(this).parents('tr');
-   $row.next().after($row.get(0));
- });
+  const $row = $(this).parents('tr');
+  $row.next().after($row.get(0));
+});
 
- // A few jQuery helpers for exporting only
- jQuery.fn.pop = [].pop;
- jQuery.fn.shift = [].shift;
+// A few jQuery helpers for exporting only
+jQuery.fn.pop = [].pop;
+jQuery.fn.shift = [].shift;
 
- $BTN.on('click', () => {
+$BTN.on('click', () => {
 
-   const $rows = $TABLE.find('tr:not(:hidden)');
-   const headers = [];
-   const data = [];
+  const $rows = $TABLE.find('tr:not(:hidden)');
+  const headers = [];
+  const data = [];
 
-   // Get the headers (add special header logic here)
-   $($rows.shift()).find('th:not(:empty)').each(function () {
+  // Get the headers (add special header logic here)
+  $($rows.shift()).find('th:not(:empty)').each(function () {
 
-     headers.push($(this).text().toLowerCase());
-   });
+    headers.push($(this).text().toLowerCase());
+  });
 
-   // Turn all existing rows into a loopable array
-   $rows.each(function () {
-     const $td = $(this).find('td');
-     const h = {};
+  // Turn all existing rows into a loopable array
+  $rows.each(function () {
+    const $td = $(this).find('td');
+    const h = {};
 
-     // Use the headers from earlier to name our hash keys
-     headers.forEach((header, i) => {
+    // Use the headers from earlier to name our hash keys
+    headers.forEach((header, i) => {
 
-       h[header] = $td.eq(i).text();
-     });
+      h[header] = $td.eq(i).text();
+    });
 
-     data.push(h);
-   });
+    data.push(h);
+  });
 
-   // Output the result
-   $EXPORT.text(JSON.stringify(data));
- });
+  // Output the result
+  $EXPORT.text(JSON.stringify(data));
+});
 
 //  function ReIndexSegments(){
 //     $TABLE.find('table')
 //  }
 
- function LoadSettings(){
-  $.getJSON("api/load-settings", function(result){
+function LoadSettings() {
+  $.getJSON("api/load-settings", function (result) {
     console.log(result);
     $('#cost').val(result['cost']);
     $('#max-temp').val(result['max-temp']);
-
     $("#timezone").val(result['notifications']['timezone']);
-     
+
     var units = (result['units'] == "celsius")
     console.log("units = " + units);
-    
-    if(units){
+
+    if (units) {
       $("#tempRadios2").removeAttr('checked');
       $("#tempRadios1").prop("checked", true);
     }
-    else{
+    else {
       $("#tempRadios1").removeAttr('checked');
       $("#tempRadios2").prop("checked", true);
     }
 
     var enableEmail = result['notifications']['enable-email'];
-    if(enableEmail){
+    if (enableEmail) {
       $("#enable-email-off").removeAttr('checked');
       $("#enable-email-on").prop("checked", true);
     }
-    else{
+    else {
       $("#enable-email-on").removeAttr('checked');
       $("#enable-email-off").prop("checked", true);
     }
-    
-    
 
     $('#sender').prop('value', result['notifications']['sender']);
     $('#sender-password').prop('value', result['notifications']['sender-password']);
     $('#receiver').prop('value', result['notifications']['receiver']);
-    
-    //
   });
- }
+}
 
- function LoadSchedules(){
-  $.getJSON("api/list-schedules", function(result){
+function LoadSchedules() {
+  $.getJSON("api/list-schedules", function (result) {
     console.log(result);
-
     var dropdownHTML = '<option value="select-schedule" selected>Select Schedule</option>';
-    // 
-    for(var i = 0; i < result['schedules'].length; i++){
-      
+
+    for (var i = 0; i < result['schedules'].length; i++) {
       var optionValue = result['schedules'][i]['path'];
       var optionName = result['schedules'][i]['name'];
       var optionData = '<option value="' + optionValue + '">' + optionName + '</option>'
-      
       console.log(optionName + " " + optionValue);
       dropdownHTML += optionData;
     }
 
     $('#fireScheduleList').html(dropdownHTML);
   });
- }
+}
 
- $('#btn-save-settings').click( function() {
-  $.post( './api/update-settings', $('form#form-settings').serialize(), function(data) {
-       console.log("POSTED");
-       console.log(data);
-       //$('.alert').alert()
-       $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-3" role="alert" id="alert-save-settings"><strong>Settings Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
-     },
-     'json' // I expect a JSON response
+$('#btn-save-settings').click(function () {
+  $.post('./api/update-settings', $('form#form-settings').serialize(), function (data) {
+    console.log("POSTED");
+    console.log(data);
+    //$('.alert').alert()
+    $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-3" role="alert" id="alert-save-settings"><strong>Settings Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+  },
+    'json' // I expect a JSON response
   );
 });
 
-$('select[name="fireScheduleList"]').change(function(){
-  if($(this).val() != "select-schedule"){
+
+var loadedUnits;
+$('select[name="fireScheduleList"]').change(function () {
+  if ($(this).val() != "select-schedule") {
     console.log("Load " + $(this).val());
     editSchedule = $(this).val();
 
     //$("#fireScheduleList option[value='select-schedule']").remove();
-    $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function(result){
+    $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
       console.log(result);
+      console.log("schedule units = " + result['units']);
+      
+      loadedUnits = result['units'];
       $('#schedule-title').text(result['name']);
+      if(result['units'] == "fahrenheit"){
+        $('.degrees').each(function () {$(this).html($(this).html().replace("°C", "°F"))});
+      }
+      else{
+        $('.degrees').each(function () {$(this).html($(this).html().replace("°F", "°C"))});
+      }
+      
       $('#schedule-body').html('');
-      for(i = 0; i < result['segments'].length; i++){
+      for (i = 0; i < result['segments'].length; i++) {
         var newRate = result['segments'][i]['rate'];
         var newTemp = result['segments'][i]['temp'];
         var newHold = result['segments'][i]['hold'];
@@ -272,21 +277,21 @@ $('select[name="fireScheduleList"]').change(function(){
         $('#schedule-body').html($('#schedule-body').html() + newSegment);
       }
       $("#schedule-group").removeClass('d-none');
-      
+
     });
-    
+
   }
 });
 
 
 
 
-function SetCurrentPage(){
+function SetCurrentPage() {
   //active
-  
+
 }
 
-function LoadSegment(rate, temp, hold, isEdit){
+function LoadSegment(rate, temp, hold, isEdit) {
   var html = '<tr class="segment-row"><td></td><td class="numbersOnly" contenteditable="' + isEdit + '">';
   html += rate;
   html += '</td><td class="numbersOnly" contenteditable="' + isEdit + '">';
@@ -294,67 +299,152 @@ function LoadSegment(rate, temp, hold, isEdit){
   html += '</td><td class="numbersOnly" contenteditable="' + isEdit + '">'
   html += hold;
   html += '</td>'
-  if(isEdit){
+  if (isEdit) {
     html += '<td class="pt-3-half"><span class="table-up mr-2"><a class="badge badge-secondary" href="#!"><i class="fas fa-long-arrow-alt-up" aria-hidden="true"></i></a></span><span class="table-down"><a class="badge badge-secondary" href="#!"><i class="fas fa-long-arrow-alt-down" aria-hidden="true"></i></a></span></td><td><span class="table-remove"><button type="button" class="btn btn-danger btn-rounded btn-sm my-0"><i class="fas fa-trash"></i></button></span></td></tr>';
   }
-  
+
   return html;
 }
 
 
-//Filter Numbers Only
-$(document).ready(function () {
 
-  GetSettings();
 
-  //highlight current page
-  $('.nav-item').each(function(){
-    console.log($(this).attr('href'));
-    if("/" + $(this).attr('href') == window.location.pathname){
-      $(this).addClass("active");
-    }
-    if($(this).attr('href') == "index" && window.location.pathname == "/"){
-      $(this).addClass("active");
-    }
-  });
-
-  setInterval(function() {
-    $('.numbersOnly').each(function(){
-      var regex = new RegExp(/[^0-9\.]/g); // expression here
-      var isNumber = false;
-
-      $(this).filter(function () {
-        isNumber = regex.test($(this).text());
-        //console.log("TEST " + $(this).text() + " " + text);
-        return isNumber;
-      });
-
-      if (isNumber) {
-        console.log("DIFF " + $(this).text() + " " + isNumber);
-        $(this).text($(this).text().replace(/[^0-9\.]/g, ''));
-      }
-
-      if(parseInt($(this).text()) > 9999){
-        $(this).text(9999)
-      }
-    });
-  }, 333);
-});
-
-function GetSettings(){
-  $.getJSON("api/load-settings", function(result){
+var currentUnits;
+function GetSettings() {
+  $.getJSON("api/load-settings", function (result) {
     console.log(result);
     //$('#cost').val(result['cost']);
     //$('#max-temp').val(result['max-temp']);
     var units = (result['units'] == "celsius")
     console.log("units = " + units);
+    currentUnits = result['units'];
 
-    //swaps degrees to F
-    if(!units){
-      $('.degrees').each(function(){
-        $(this).html($(this).html().replace("°C", "°F"));
-      });
-    }
-   
   });
+}
+
+function GetStatus() {
+  $.getJSON("api/load-status", function (result) {
+    console.log(result);
+    //swaps degrees to F
+    var newHtml = "<p><b>STATUS: </b>";
+
+    if (result['status'] != "error") {
+
+      var tempUnits = result['units'] == "celsius" ? "°C" : "°F";
+
+      newHtml += result['current-temp'] + tempUnits + " | ";
+      newHtml += result['start-time'] + " | ";
+      newHtml += result['name'] + " | ";
+      newHtml += result['status'];
+
+    }
+    else {
+      newHtml += result['error'];
+    }
+
+    newHtml += "</p>";
+
+    $('#footer-status').html(newHtml);
+
+  });
+}
+
+function HighlightNav(){
+  //highlight current page
+  $('.nav-item').each(function () {
+    console.log($(this).attr('href'));
+    if ("/" + $(this).attr('href') == window.location.pathname) {
+      $(this).addClass("active");
+    }
+    if ($(this).attr('href') == "index" && window.location.pathname == "/") {
+      $(this).addClass("active");
+    }
+  });
+}
+
+function NumbersOnly(){
+  $('.numbersOnly').each(function () {
+
+    var numberText = $(this).text();
+
+    var regex = new RegExp(/[^0-9\.]/g); // expression here
+    var isNumber = false;
+
+    $(this).filter(function () {
+      isNumber = regex.test(numberText);
+      //console.log("TEST " + $(this).text() + " " + text);
+      return isNumber;
+    });
+
+    if (isNumber) {
+      console.log("DIFF " + numberText + " " + isNumber);
+      $(this).text(numberText.replace(/[^0-9\.]/g, ''));
+    }
+
+    if (parseInt(numberText) > 9999) {
+      $(this).text(9999)
+    }
+  });
+}
+
+$(document).ready(function () {
+
+  //GetSettings();
+  HighlightNav();
+
+  //Filter Numbers Only
+  setInterval(function () {NumbersOnly()}, 333);
+
+  GetStatus();
+  //setInterval(function () { GetStatus() }, 5000); 
+
+  CelsiusConeChart();
+});
+
+function CelsiusConeChart(){
+  console.log("rows?");
+  var index = 0;
+
+  $('.cone-row').each(function() {
+    if(index > 0){
+      var newHtml = $(this).html();
+
+      var newTemp = $(this).find("td").eq(3).text().replace("°F", "");
+      newTemp = f2c(parseInt(newTemp));
+
+      newHtml += AddTD(newTemp.toFixed(0) + "°C");
+      console.log(newHtml);
+      
+      $(this).html(newHtml);
+    }
+    index++;
+  });
+}
+
+function f2c(value){
+  return (value - 32) * 5 / 9;
+}
+
+function ScrapeTable(){
+  var newHtml = "";
+  var index = 0;
+  $('#cone-table tr').each(function() {
+    
+    if(index < 36){
+      newHtml += '<tr>'; 
+      newHtml += AddTD($(this).find("td").eq(0).text());
+      newHtml += AddTD($(this).find("td").eq(1).text());
+      newHtml += AddTD($(this).find("td").eq(2).text());
+      newHtml += AddTD($(this).find("td").eq(3).text());
+      index++;
+      newHtml += '</tr>';
+    }
+    
+    //var customerId = $(this).find("td").eq(2).html();    
+  });
+  return newHtml;
+}
+
+function AddTD(cellData){
+  return '<td>' + cellData + '</td>';
 }

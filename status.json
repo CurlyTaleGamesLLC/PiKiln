@@ -1,0 +1,21 @@
+{
+    "name":"Celedon Red",
+    "filename":"1234",
+    "status":"Firing",
+    "error":"none",
+    "current-temp":220,
+    "units":"fahrenheit",
+    "start-time":1234,
+    "temp-log":[
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+    ]
+
+}

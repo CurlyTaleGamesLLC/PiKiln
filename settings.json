@@ -1,6 +1,6 @@
 {
     "cost":0.14,
-    "max-temp":1371.111111111111,
+    "max-temp":0.0,
     "notifications":{
         "enable-email":true,
         "receiver":"",
@@ -8,5 +8,5 @@
         "sender-password":"NeverGonnaGiveYouUp!1",
         "timezone":"Etc/GMT+3"
     },
-    "units":"fahrenheit"
+    "units":"celsius"
 }
