@@ -1,0 +1,39 @@
+.schedule-header{
+    font-size: .4em;
+}
+
+.schedule{
+    font-size: 1.4em;
+}
+
+body { padding-right: 0 !important }
+.modal { padding-right: 0 !important }
+
+table {
+    counter-reset: rowCounter;
+    border-collapse: collapse;
+}
+
+tr td:first-child {
+    counter-increment: rowCounter;
+}
+
+td:first-child::before {
+    content: counter(rowCounter);
+}
+
+@media(max-width: 520px) {
+    .full-width2 {
+        width: 100%;  
+    }
+}
+
+.current-segment{
+    background-color: #007bff;
+}
+
+canvas {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}

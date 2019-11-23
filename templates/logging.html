@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" class="h-100">
+
+<head>
+    <title>Settings</title>
+    {% include 'head.html' %}
+</head>
+
+<body class="d-flex flex-column h-100">
+    {% include 'nav.html' %}
+
+    <main role="main" class="flex-shrink-0 mb-4">
+        <div class="container">
+            <div class="row">
+                <h4 class="col-12">Most Recent Firing</h4>
+                <div class="col-12">
+                    <label for="timezone">11/21/2019 1:00PM - Celadon Blue</label>
+                    <canvas id="canvas"></canvas>
+                   
+                </div>
+            </div>
+        </div>
+       
+    </main>
+
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+    
+
+    {% include 'footer.html' %}
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            console.log( "document loaded" );
+            //LoadSettings();
+        });
+    </script>
+
+</body>
+
+</html>

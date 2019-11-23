@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+  <title>Home</title>
+  {% include 'head.html' %}
+</head>
+
+<body class="d-flex flex-column h-100">
+  {% include 'nav.html' %}
+
+  <main role="main" class="flex-shrink-0">
+    <div class="container">
+
+        <div class="row mt-4">
+          <div class="col-12">
+            <h2>Select Firing Schedule:</h2>
+            <select class="custom-select" id="fireScheduleList" name="fireScheduleList">
+              <option selected>Select Schedule</option>
+            </select>
+          </div>
+        </div>
+
+
+      <div id="schedule-group" class="d-none">
+
+      <h2 class="mb-3 mt-3" contenteditable="false" id="schedule-title">Bisque Fire (Stoneware)</h2>
+
+      <h5>Firing Schedule</h5>
+      <div id="table" class="table-responsive table-editable mb-3">
+        <table class="table table-striped table-sm schedule">
+          <thead>
+            <tr class="schedule-header">
+              <th>SEG #</th>
+              <th class="degrees">RATE<br>(°C/HOUR)</th>
+              <th class="degrees">TARGET<br>TEMP (°C)</th>
+              <th>HOLD TIME<br>(MINUTES)</th>
+            </tr>
+          </thead>
+          <tbody id="schedule-body">
+            <!--firing segments loaded here-->
+          </tbody>
+        </table>
+      </div>
+
+      
+
+      <div class="row">
+        <!--cost estimates-->
+        <h5 class="col-12">Estimated Time:</h5>
+        <h6 class="col-12">1:00</h6>
+        <h5 class="col-12">Estimated Cost:</h5>
+        <h6 class="col-12">$2.00</h6>
+        <h6 class="col-12 text-center">Time Remaining: 1:45</h6>
+        <div class="col-12 text-center">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:40%"></div>
+              </div>
+        </div>
+      </div>
+
+      
+
+      <!--start firing schedule-->
+      <div class="row mt-4">
+        <div class="col-12 text-center">
+            <button data-toggle="modal" data-target="#start-confirm-modal" id="btn-delete-schedule-modal" class="btn mb-2 full-width2 btn-primary"><i class="fas fa-burn"></i> Start Schedule</button>
+        </div>
+      </div>
+
+      
+
+    </div>
+  </main>
+
+  {% include 'footer.html' %}
+
+  <!-- Modal -->
+  <div class="modal fade" id="start-confirm-modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-title-id">Start Firing Schedule?</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+          <button type="button" id="btn-delete-schedule" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-burn"></i> Start Schedule</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    $(document).ready(function() {
+        console.log( "document loaded" );
+        LoadSchedules();
+    });
+</script>
+
+</body>
+
+</html>
