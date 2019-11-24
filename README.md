@@ -6,7 +6,7 @@ This project is not complete just yet, but feedback and contributors are welcome
 
 # Quick Setup #
 
-Download this Pre-Configured ISO for Raspberrian with PiKiln and all the dependancies installed.
+Download this Pre-Configured ISO for Raspbian with PiKiln and all the dependancies installed.
 
 (There would be a link here if this project were finished)
 

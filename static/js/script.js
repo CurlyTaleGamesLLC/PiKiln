@@ -3,6 +3,7 @@ const $BTN = $('#export-btn');
 const $EXPORT = $('#export');
 
 var editSchedule;
+var loadedSchedule;
 
 const newTr = `
 <tr class="segment-row hide">
@@ -60,9 +61,7 @@ $('#btn-add-segment').click(function () {
   $TABLE.find('table').append($clone);
 });
 
-$('#btn-save-schedule').click(function () {
-  console.log("Schedule Saved");
-
+function ScheduleToJSON(){
   var newSchedule = new Object();
   newSchedule.name = $('#schedule-title').text();
   newSchedule.units = loadedUnits;
@@ -76,8 +75,8 @@ $('#btn-save-schedule').click(function () {
   var saveHold;
 
   $(".segment-row td").each(function () {
-    console.log($(this).html());
-    console.log(index % 6);
+    //console.log($(this).html());
+    //console.log(index % 6);
 
     if (index % 6 == 1) {
       saveRate = parseInt($(this).text());
@@ -92,14 +91,18 @@ $('#btn-save-schedule').click(function () {
     index++;
   });
 
-  console.log(newSchedule);
+  //console.log(newSchedule);
+  return newSchedule;
+}
 
+$('#btn-save-schedule').click(function () {
+  console.log("Schedule Saved");
 
   $.ajax({
     type: "POST",
     contentType: "application/json; charset=utf-8",
     url: "api/save-schedule",
-    data: JSON.stringify(newSchedule),
+    data: JSON.stringify(ScheduleToJSON()),
     success: function (data) {
       console.log(data);
       LoadSchedules();
@@ -306,7 +309,7 @@ $('select[name="fireScheduleList"]').change(function () {
     $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
       console.log(result);
       console.log("schedule units = " + result['units']);
-      
+      loadedSchedule = result;
       loadedUnits = result['units'];
       $('#schedule-title').text(result['name']);
       if(result['units'] == "fahrenheit"){
@@ -327,10 +330,46 @@ $('select[name="fireScheduleList"]').change(function () {
       }
       $("#schedule-group").removeClass('d-none');
 
+      //Estimate Time
+      UpdateEstimateTime();
+      
+
     });
+
+    
 
   }
 });
+
+function UpdateEstimateTime(){
+  console.log("update time estimate");
+  if(loadedSchedule == null){
+    return;
+  }
+  console.log("update time estimate2");
+  if(window.location.pathname == "/firing-schedules"){
+    loadedSchedule = ScheduleToJSON();
+  }
+  console.log(loadedSchedule);
+  var totalLength = 0;
+
+  //assume room temperature
+  //editSchedule
+  var startTemp = loadedUnits == "fahrenheit" ? 72 : 22.222;
+
+  for(var i = 0; i < loadedSchedule['segments'].length; i++){
+    var tempDifference = Math.abs(loadedSchedule['segments'][i]['temp'] - startTemp)
+    var rampTime = (tempDifference/loadedSchedule['segments'][i]['rate']) * 60;
+    //console.log("seg + " + rampTime);
+		totalLength += rampTime;
+		//console.log("hold + " + loadedSchedule['segments'][i]['hold']);
+		totalLength += loadedSchedule['segments'][i]['hold'];
+  }
+  //console.log("totalLength = " + totalLength);
+
+  $('#home-time').text(FormatTime(totalLength));
+  return totalLength
+}
 
 function LoadSegment(rate, temp, hold, isEdit) {
   var html = '<tr class="segment-row"><td></td><td class="numbersOnly" contenteditable="' + isEdit + '">';
@@ -376,26 +415,23 @@ function GetStatus() {
       $('#status-temp').text(tempUnitsText);
     });
 
-    $.getJSON("api/get-current-segment", function (result3) {
-      console.log(result3)
-      $('.segment-row').each(function () {
-        var isFiring = result['status'] == "firing"
-        // console.log("checking segment index");
-        // console.log($(this).index());
-        // console.log(result3['segment']);
-        // console.log(result['status']);
-        // console.log(result['status'] == "firing");
-        var isSegmentIndex = $(this).index() == result3['segment']
-        if (isFiring && isSegmentIndex) {
-          $(this).addClass("current-segment");
-          $(this).addClass("text-light");
-        }
-        else {
-          $(this).removeClass("current-segment");
-          $(this).removeClass("text-light");
-        }
+    if (window.location.pathname == "/" || window.location.pathname == "/index") {
+      $.getJSON("api/get-current-segment", function (result3) {
+        console.log(result3)
+        $('.segment-row').each(function () {
+          var isFiring = result['status'] == "firing"
+          var isSegmentIndex = $(this).index() == result3['segment']
+          if (isFiring && isSegmentIndex) {
+            $(this).addClass("current-segment");
+            $(this).addClass("text-light");
+          }
+          else {
+            $(this).removeClass("current-segment");
+            $(this).removeClass("text-light");
+          }
+        });
       });
-    });
+    }
 
   });
   $.getJSON("api/get-total-time", function (result) {
@@ -448,7 +484,12 @@ $(document).ready(function () {
   setInterval(function () {NumbersOnly()}, 333);
 
   GetStatus();
-  setInterval(function () { GetStatus() }, 5000); 
+  setInterval(function () { GetStatus() }, 5000);
+  
+  if(window.location.pathname == "/firing-schedules"){
+    setInterval(function () {UpdateEstimateTime()}, 333);
+  }
+  
 });
 
 function CelsiusConeChart(){
@@ -492,13 +533,6 @@ function GetTotals(){
     console.log(result);
 
     $('#log-fires').text(result['fires']);
-    
-    //format time to be hours:mins (2:45)
-    // var hours = Math.floor(result['time'] / 60).toString();
-    // var mins = Math.floor(result['time'] % 60).toString();
-    // if(mins.length < 2){
-    //   mins = "0" + mins;
-    // }
     $('#log-time').text(FormatTime(result['time']));
 
     var formatCost = "$";
