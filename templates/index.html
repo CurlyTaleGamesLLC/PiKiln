@@ -11,7 +11,7 @@
   <main role="main" class="flex-shrink-0">
     <div class="container">
 
-        <div class="row">
+        <div id="home-schedule-list" class="row">
           <div class="col-12">
             <h2>Select Firing Schedule:</h2>
             <select class="custom-select" id="fireScheduleList" name="fireScheduleList">
@@ -26,7 +26,7 @@
       <h2 class="mb-3 mt-3" contenteditable="false" id="schedule-title">Bisque Fire (Stoneware)</h2>
 
       <h5>Firing Schedule</h5>
-      <div id="table" class="table-responsive table-editable mb-3">
+      <div id="table" class="table-responsive table-editable">
         <table class="table table-striped table-sm schedule">
           <thead>
             <tr class="schedule-header">
@@ -41,29 +41,36 @@
           </tbody>
         </table>
       </div>
-
+      
       
 
       <div class="row">
+        <h5 class="col-12 mb-3">Current Temperature: <span id="home-current-temperature">220°F</span></h5>
+
         <!--cost estimates-->
-        <h5 class="col-12">Estimated Time:</h5>
-        <h6 class="col-12">1:00</h6>
-        <h5 class="col-12">Estimated Cost:</h5>
-        <h6 class="col-12">$2.00</h6>
-        <h6 class="col-12 text-center">Time Remaining: 1:45</h6>
-        <div class="col-12 text-center">
-            <div class="progress">
-                <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:40%"></div>
-              </div>
+        <ul id="home-estimates" class="list-group col-12 mb-4">
+          <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">1:00</span></li>
+          <li class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">$2.00</span></li>
+        </ul>
+        
+        <div id="home-time-group" class="col-12">
+          
+          <h5>Time Remaining: <span id="home-time-remaining">0:00</span></h5>
+        
+          <div class="progress">
+            <div id="home-time-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+          </div>
+        
         </div>
-      </div>
+        </div>
 
       
 
       <!--start firing schedule-->
-      <div class="row mt-4">
-        <div class="col-12 text-center">
-            <button data-toggle="modal" data-target="#start-confirm-modal" id="btn-delete-schedule-modal" class="btn mb-2 full-width2 btn-primary"><i class="fas fa-burn"></i> Start Schedule</button>
+      <div class="row mt-4 mb-3">
+        <div class="col-12 text-right">
+            <button data-toggle="modal" data-target="#start-confirm-modal" id="btn-start-schedule-modal" class="btn mb-2 full-width2 btn-primary d-none"><i class="fas fa-burn"></i> Start Schedule</button>
+            <button data-toggle="modal" data-target="#stop-confirm-modal" id="btn-stop-schedule-modal" class="btn mb-2 full-width2 btn-danger"><i class="fas fa-ban"></i> Stop Schedule</button>
         </div>
       </div>
 
@@ -87,11 +94,30 @@
         
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
-          <button type="button" id="btn-delete-schedule" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-burn"></i> Start Schedule</button>
+          <button type="button" id="btn-start-schedule" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-burn"></i> Start Schedule</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="stop-confirm-modal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal-title-id">Stop Firing Schedule?</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
+            <button type="button" id="btn-stop-schedule" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban"></i> Stop Schedule</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script>

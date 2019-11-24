@@ -1,11 +1,10 @@
 {
-    "name":"Celedon Red",
-    "filename":"1234",
-    "status":"Firing",
-    "error":"none",
     "current-temp":220,
-    "units":"fahrenheit",
-    "start-time":1234,
+    "error":"",
+    "filename":"1234",
+    "name":"Test Schedule",
+    "start-time":"2019-11-24 02:38:03",
+    "status":"firing",
     "temp-log":[
         100,
         200,
@@ -16,6 +15,8 @@
         700,
         800,
         900
-    ]
-
+    ],
+    "timezone":"Etc/GMT+3",
+    "total-time":300,
+    "units":"fahrenheit"
 }

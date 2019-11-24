@@ -47,6 +47,11 @@
 
                     <!--Electricity Cost-->
                     <div class="form-group mt-1">
+                            <label for="volts">Kiln Voltage</label>
+                            <input type="number" step="1" class="form-control" name="volts" id="volts" placeholder="220">
+                            <small id="voltsHelp" class="form-text text-muted">Either 120 or 220 volts for USA, 220 volts for Europe</small>
+                        </div>
+                    <div class="form-group mt-1">
                         <label for="maxTemp">Electricity Cost Per Kilowatt</label>
                         <input type="number" step="0.01" class="form-control" name="cost" id="cost" placeholder="0.14">
                     </div>

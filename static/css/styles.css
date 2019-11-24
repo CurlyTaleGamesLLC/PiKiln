@@ -29,18 +29,22 @@ td:first-child::before {
     content: counter(rowCounter);
 }
 
-@media(max-width: 520px) {
-    .full-width2 {
+@media(max-width: 767px) {
+    .full-width-small {
         width: 100%;  
     }
 }
 
 .current-segment{
-    background-color: #007bff;
+    background-color: #007bff !important;
 }
 
 canvas {
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
+}
+
+.list-group{
+    padding-right: 0;
 }

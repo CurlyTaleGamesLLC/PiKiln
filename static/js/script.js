@@ -19,6 +19,36 @@ const newTr = `
     </td>
 </tr>`;
 
+$('#btn-start-schedule').click(function () {
+  $.getJSON("api/start-fire", function (result) {
+    console.log(result);
+    $('#btn-start-schedule-modal').addClass('d-none');
+    $('#btn-stop-schedule-modal').removeClass('d-none');
+    $('#home-time-group').removeClass('d-none');
+    $('#home-schedule-list').addClass('d-none');
+    $('#home-estimates').addClass('d-none');
+  });
+});
+
+$('#btn-stop-schedule').click(function () {
+  $.getJSON("api/stop-fire", function (result) {
+    console.log(result);
+    $('#btn-stop-schedule-modal').addClass('d-none');
+    $('#btn-start-schedule-modal').removeClass('d-none');
+    $('#home-time-group').addClass('d-none');
+    $('#home-schedule-list').removeClass('d-none');
+    $('#home-estimates').removeClass('d-none');
+  });
+});
+
+function UpdateTimer(currentTime, totalTime){
+  var percent = currentTime/totalTime;
+  $('#home-time-bar').css("width", (percent * 100).toFixed(2) + '%');
+
+  $('#home-time-remaining').text(FormatTime(totalTime - currentTime));
+}
+
+
 $('#btn-add-segment').click(function () {
   const $clone = $TABLE.find('tbody tr').last().clone(true).removeClass('hide table-line');
 
@@ -123,6 +153,25 @@ $('#btn-create-schedule').click(function () {
   });
 });
 
+$('#btn-download-schedule').click(function () {
+  console.log("Download Schedule");
+  var selectedSchedule =  $('select[name="fireScheduleList"]').val();
+  if (selectedSchedule != "select-schedule") {
+    window.open('api/get-schedule?schedulePath=' + selectedSchedule);    
+  }
+});
+
+$('#btn-import-schedule').click(function () {
+  console.log("Import Schedule");
+  $('#import-schedule').click();
+});
+
+//auto submits the schedule import upload
+$('#import-schedule').on('change', function () {
+  $('#importForm').submit();
+});
+
+
 $TABLE.on('click', '.table-remove', function () {
 
   $(this).parents('tr').detach();
@@ -188,6 +237,7 @@ function LoadSettings() {
     console.log(result);
     $('#cost').val(result['cost']);
     $('#max-temp').val(result['max-temp']);
+    $('#volts').val(result['volts']);
     $("#timezone").val(result['notifications']['timezone']);
 
     var units = (result['units'] == "celsius")
@@ -246,7 +296,6 @@ $('#btn-save-settings').click(function () {
   );
 });
 
-
 var loadedUnits;
 $('select[name="fireScheduleList"]').change(function () {
   if ($(this).val() != "select-schedule") {
@@ -283,14 +332,6 @@ $('select[name="fireScheduleList"]').change(function () {
   }
 });
 
-
-
-
-function SetCurrentPage() {
-  //active
-
-}
-
 function LoadSegment(rate, temp, hold, isEdit) {
   var html = '<tr class="segment-row"><td></td><td class="numbersOnly" contenteditable="' + isEdit + '">';
   html += rate;
@@ -318,34 +359,47 @@ function GetSettings() {
     var units = (result['units'] == "celsius")
     console.log("units = " + units);
     currentUnits = result['units'];
-
   });
 }
 
 function GetStatus() {
   $.getJSON("api/load-status", function (result) {
     console.log(result);
-    //swaps degrees to F
-    var newHtml = "<p><b>STATUS: </b>";
+    $('#status-schedule').text(result['name']);
+    $('#status-state').text(result['status']);
+    $('#status-start-time').text(result['start-time']);
 
-    if (result['status'] != "error") {
-
+    $.getJSON("api/temperature", function (result2) {
       var tempUnits = result['units'] == "celsius" ? "°C" : "°F";
+      var tempUnitsText = result2['temp'] + tempUnits;
+      $('#home-current-temperature').text(tempUnitsText);
+      $('#status-temp').text(tempUnitsText);
+    });
 
-      newHtml += result['current-temp'] + tempUnits + " | ";
-      newHtml += result['start-time'] + " | ";
-      newHtml += result['name'] + " | ";
-      newHtml += result['status'];
+    $.getJSON("api/get-current-segment", function (result3) {
+      console.log(result3)
+      $('.segment-row').each(function () {
+        var isFiring = result['status'] == "firing"
+        // console.log("checking segment index");
+        // console.log($(this).index());
+        // console.log(result3['segment']);
+        // console.log(result['status']);
+        // console.log(result['status'] == "firing");
+        var isSegmentIndex = $(this).index() == result3['segment']
+        if (isFiring && isSegmentIndex) {
+          $(this).addClass("current-segment");
+          $(this).addClass("text-light");
+        }
+        else {
+          $(this).removeClass("current-segment");
+          $(this).removeClass("text-light");
+        }
+      });
+    });
 
-    }
-    else {
-      newHtml += result['error'];
-    }
-
-    newHtml += "</p>";
-
-    $('#footer-status').html(newHtml);
-
+  });
+  $.getJSON("api/get-total-time", function (result) {
+    UpdateTimer(result['current-time'], result['total-time']);
   });
 }
 
@@ -388,17 +442,13 @@ function NumbersOnly(){
 }
 
 $(document).ready(function () {
-
-  //GetSettings();
   HighlightNav();
 
   //Filter Numbers Only
   setInterval(function () {NumbersOnly()}, 333);
 
   GetStatus();
-  //setInterval(function () { GetStatus() }, 5000); 
-
-  CelsiusConeChart();
+  setInterval(function () { GetStatus() }, 5000); 
 });
 
 function CelsiusConeChart(){
@@ -423,6 +473,46 @@ function CelsiusConeChart(){
 
 function f2c(value){
   return (value - 32) * 5 / 9;
+}
+
+//format time to be hours:mins (2:45)
+function FormatTime(value){
+  var hours = Math.floor(value / 60).toString();
+  var mins = Math.floor(value % 60).toString();
+  if(mins.length < 2){
+    mins = "0" + mins;
+  }
+  return hours + ":" + mins;
+}
+
+
+
+function GetTotals(){
+  $.getJSON("api/load-totals", function (result) {
+    console.log(result);
+
+    $('#log-fires').text(result['fires']);
+    
+    //format time to be hours:mins (2:45)
+    // var hours = Math.floor(result['time'] / 60).toString();
+    // var mins = Math.floor(result['time'] % 60).toString();
+    // if(mins.length < 2){
+    //   mins = "0" + mins;
+    // }
+    $('#log-time').text(FormatTime(result['time']));
+
+    var formatCost = "$";
+    if(result['cost'] < 1){
+      formatCost += "0.";
+    }
+    if(result['cost'] < .10){
+      formatCost += "0";
+    }
+    formatCost += result['cost'].toString();
+
+    $('#log-cost').text(formatCost);
+
+  });
 }
 
 function ScrapeTable(){

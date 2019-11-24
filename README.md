@@ -2,7 +2,7 @@
 
 PiKiln is an open source web based kiln controller built to run on a Raspberry Pi.
 
-This project is not complete just yet, but welcome feedback and contributors.
+This project is not complete just yet, but feedback and contributors are welcome.
 
 # Quick Setup #
 
@@ -124,3 +124,8 @@ Disable screen sleeping - Optional, but handy
 Look for the line starts “xserver-command” under “[Seat:*]” section and modify as below:
 
 `xserver-command=X -s 0 -dpms`
+
+# Features to be developed in the future #
+* Delayed Start
+* Temperature Email Notification - triggered via firing schedule
+* GPIO output for venting with a fan - triggered via firing schedule

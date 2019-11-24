@@ -2,7 +2,7 @@
 <html lang="en" class="h-100">
 
 <head>
-    <title>Settings</title>
+    <title>Logging</title>
     {% include 'head.html' %}
 </head>
 
@@ -20,12 +20,12 @@
                 </div>
             </div>
             <div class="row mt-4">
-                <h4 class="col-12">Kiln Summary Totals</h4>
+                <h4 class="col-12">Kiln Totals</h4>
             
-                <ul class="list-group col-12">
-                    <li class="list-group-item">Fires: <span id="log-fires">1</span></li>
-                    <li class="list-group-item">Cost: <span id="log-cost">1</span></li>
-                    <li class="list-group-item">Time Firing: <span id="log-time">1</span></li>
+                <ul class="list-group col-12" id="kiln-totals">
+                    <li class="list-group-item"><b>Fires:</b> <span id="log-fires">0</span></li>
+                    <li class="list-group-item"><b>Time Firing:</b> <span id="log-time">0</span></li>
+                    <li class="list-group-item"><b>Cost:</b> <span id="log-cost">0</span></li>
                 </ul>
             </div>
             
@@ -35,7 +35,6 @@
 
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 
-    
 
     {% include 'footer.html' %}
 
@@ -65,7 +64,7 @@
     <script>
         $(document).ready(function() {
             console.log( "document loaded" );
-            //LoadSettings();
+            GetTotals();
         });
     </script>
 

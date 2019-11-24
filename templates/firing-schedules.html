@@ -25,9 +25,33 @@
         <!--add rows and delete firing schedule-->
         <div class="row mt-3">
           <div class="col-md-12">
-            <button id="btn-create-schedule" class="btn btn-primary"><i class="fas fa-file-alt"></i> Create New Schedule</button>
+            <button id="btn-create-schedule" class="btn btn-primary"><i class="fas fa-file-alt"></i> New Schedule</button>
+            <button id="btn-import-schedule" class="btn btn-light"><i class="fas fa-file-upload"></i> Import</button>
+            <button id="btn-download-schedule" class="btn btn-light"><i class="fas fa-file-download"></i> Export</button>
+            
+
+            <form id="importForm" enctype="multipart/form-data" class="d-none">
+              <input type="file" accept=".json" id="import-schedule" name="imported-schedule">
+              <input type="submit" name="submit">
+            </form>
+
           </div>
         </div>
+
+        <script>
+            importForm.onsubmit = async (e) => {
+              e.preventDefault();
+          
+              let response = await fetch('/api/import-schedule', {
+                method: 'POST',
+                body: new FormData(importForm)
+              });
+          
+              let result = await response.json();
+              location.reload();
+              //alert(result.message);
+            };
+          </script>
 
       <div id="schedule-group" class="d-none">
 
@@ -53,22 +77,23 @@
       </div>
 
       <!--add rows and delete firing schedule-->
+      <div class="mb-4">
       <div class="row mt-4">
       
         <div class="col-12">
-        <button id="btn-add-segment" class="btn mb-2 full-width2 btn-success table-add"><i class="fas fa-plus-circle"></i> Add Stage</button>
+        <button id="btn-add-segment" class="btn mb-2 full-width-small btn-success table-add"><i class="fas fa-plus-circle"></i> Add Stage</button>
 
-        <button id="btn-save-schedule" class="btn mb-2 full-width2 btn-primary"><i class="fas fa-save"></i> Save Schedule</button>
+        <button id="btn-save-schedule" class="btn mb-2 full-width-small btn-primary"><i class="fas fa-save"></i> Save Schedule</button>
       
-        <button class="btn mb-2 full-width2 btn-light" data-toggle="collapse" data-target="#coneChart" aria-expanded="false" aria-controls="coneChart"><i class="fas fa-table"></i> Cone Chart</button>
+        <button class="btn mb-2 full-width-small btn-light" data-toggle="collapse" data-target="#coneChart" aria-expanded="false" aria-controls="coneChart"><i class="fas fa-table"></i> Cone Chart</button>
 
-        <button data-toggle="modal" data-target="#delete-confirm-modal" id="btn-delete-schedule-modal" class="btn mb-2 full-width2 btn-danger float-right"><i class="fas fa-trash"></i> Delete Schedule</button>
+        <button data-toggle="modal" data-target="#delete-confirm-modal" id="btn-delete-schedule-modal" class="btn mb-2 full-width-small btn-danger float-right"><i class="fas fa-trash"></i> Delete Schedule</button>
         </div>
         <div id="alert-container" class="col-12"></div>
       
       </div>
 
-
+      <!--reference cone temperature chart-->
       <div class="row">
         <div class="collapse col-12" id="coneChart">
           <div class="card card-body">
@@ -76,6 +101,7 @@
           </div>
         </div>
       </div>
+    </div>
       
 
     </div>
@@ -107,6 +133,7 @@
     $(document).ready(function() {
         console.log( "document loaded" );
         LoadSchedules();
+        CelsiusConeChart();
     });
 </script>
 

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import json
 import uuid
 import os
+from fire import hello, hello_stop, start_fire, stop_fire, get_total_time, get_current_temperature, get_current_segment
 
 units = True
 
@@ -9,6 +10,33 @@ def str2bool(v):
 	return v.lower() in ("yes", "true", "t", "1")
 
 app = Flask(__name__)
+
+@app.route('/api/hello')
+def api_hello():
+	hello()
+	return 'hello ran'
+
+@app.route('/api/start-fire')
+def api_start_fire():
+	hello()
+	# start_fire()
+	return '{"result":true}'
+
+@app.route('/api/stop-fire')
+def api_stop_fire():
+	hello_stop()
+	# stop_fire()
+	return '{"result":false}'
+
+@app.route('/api/get-total-time')
+def api_get_total_time():
+	newTime = get_total_time()
+	return '{"current-time":' + str(newTime[0]) + ', "total-time":' + str(newTime[1]) + '}'
+
+@app.route('/api/get-current-segment')
+def api_get_current_segment():
+	segIndex = get_current_segment()
+	return '{"segment":' + str(segIndex) + '}'
 
 @app.route('/api/timezones')
 def api_timezones():
@@ -18,8 +46,8 @@ def api_timezones():
 
 @app.route('/api/temperature')
 def api_temp():
-	print("getting temperature")
-	return 'temperature'
+	print("getting temperature" + str(get_current_temperature()))
+	return '{"temp":' + str(get_current_temperature()) + '}'
 
 @app.route('/api/delete-schedule', methods=['DELETE'])
 def delete_schedule():
@@ -29,6 +57,41 @@ def delete_schedule():
 	os.remove(fullPath)
 	return 'Deleted ' + filename
 
+
+@app.route('/api/import-schedule', methods=['POST'])
+def import_schedule():
+	# import file and create a unique filename
+	unique_filename = str(uuid.uuid4())
+	try:
+		file = request.files['imported-schedule']
+	except:
+		file = None
+
+	# check if valid file
+	if file and file.filename.endswith('.json'):
+		filename = unique_filename + '.json'
+		fullPath = os.path.join('schedules', filename)
+		print("saving " + fullPath)
+		file.save(fullPath)
+		file_uploaded = True
+	else:
+		filename = None
+		file_uploaded = False
+
+	# update path in imported schedule to be new filename
+	if file_uploaded:
+		with open (fullPath, "r") as fileData:
+				jsonFileData = json.load(fileData)
+				jsonFileData['path'] = filename
+
+		with open(fullPath, 'w') as f:
+			json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
+			#add trailing newline for POSIX compatibility
+			f.write('\n')
+
+	# return some json to reload the page
+	jsonResult = '{"result":' + str(file_uploaded).lower() + '}'
+	return jsonResult
 
 @app.route('/api/create-schedule', methods=['POST'])
 def create_schedule():
@@ -125,6 +188,13 @@ def api_load_status():
 		statusData = json.load(getStatus)
 		return statusData
 
+@app.route('/api/load-totals')
+def api_load_totals():
+	with open ("totals.json", "r") as getTotals:
+		totalsData = json.load(getTotals)
+		return totalsData
+
+# This is kind of hacky and needs some cleanup
 @app.route('/api/update-settings', methods=['POST'])
 def update_settings():
 	global units
@@ -139,6 +209,7 @@ def update_settings():
 	newData['notifications']['receiver'] = rawData['receiver']
 	newData['notifications']['enable-email'] = str2bool(rawData['enable-email'])
 	newData['cost'] = float(rawData['cost'])
+	newData['volts'] = float(rawData['volts'])
 
 	# convert max temp if units were changed
 	newData['units'] = rawData['units']
@@ -149,10 +220,8 @@ def update_settings():
 		else:
 			newData['max-temp'] = (float(rawData['max-temp']) -32) * 5 / 9
 
-
 	units = newData['units']
-	
-	
+		
 	# write new settings to json file
 	with open('settings.json', 'w') as f:
 		json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
@@ -160,6 +229,14 @@ def update_settings():
 		f.write('\n')
 	return request.form
 
+# gets most up to date temperature units in settings
+def get_units():
+	global units
+	with open('settings.json') as settings_file:
+		data = json.load(settings_file)
+		units = data['units']
+
+# render html templates
 @app.route('/')
 def render_home():
 	return render_template('index.html')
@@ -188,11 +265,6 @@ def set_response_headers(response):
 	response.headers['Expires'] = '0'
 	return response
 	
-def get_units():
-	global units
-	with open('settings.json') as settings_file:
-		data = json.load(settings_file)
-		units = data['units']
 
 	
 # @app.route('/<string:page_name>')
