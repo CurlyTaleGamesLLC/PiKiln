@@ -149,9 +149,10 @@ $('#btn-create-schedule').click(function () {
   console.log("Schedule Created");
   $.post("api/create-schedule", function (data) {
     console.log(data);
-    var newScheduleOption = '<option value="' + data + '">' + 'Untitled Schedule' + '</option>'
+    console.log(data['filename']);
+    var newScheduleOption = '<option value="' + data['filename'] + '">' + 'Untitled Schedule' + '</option>'
     $('#fireScheduleList').html($('#fireScheduleList').html() + newScheduleOption);
-    $("#fireScheduleList").val(data).change();
+    $("#fireScheduleList").val(data['filename']).change();
     //$("#schedule-group").removeClass('d-none');
   });
 });
@@ -435,7 +436,9 @@ function GetStatus() {
 
   });
   $.getJSON("api/get-total-time", function (result) {
-    UpdateTimer(result['current-time'], result['total-time']);
+    //console.log(result);
+    //UpdateTimer(result['currentTime'], result['totalTime']);
+    UpdateTimer(result['totalTime']/2, result['totalTime']);
   });
 }
 

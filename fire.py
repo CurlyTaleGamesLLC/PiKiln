@@ -55,9 +55,9 @@ def get_total_time():
 	totalLength = 0
 
 	for segment in activeSchedule['segments']:
-		print("seg + " + str(abs(float(segment['temp'] - startTemp))/float(segment['rate']) * 60))
+		# print("seg + " + str(abs(float(segment['temp'] - startTemp))/float(segment['rate']) * 60))
 		totalLength += abs((float(segment['temp'] - startTemp)/float(segment['rate'])) * 60)
-		print("hold + " + str(segment['hold']))
+		# print("hold + " + str(segment['hold']))
 		totalLength += segment['hold']
 
 	totalLength = totalLength

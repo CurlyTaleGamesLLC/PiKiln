@@ -1,6 +1,6 @@
 {
     "cost":0.14,
-    "max-temp":2550.0,
+    "max-temp":"2500",
     "notifications":{
         "enable-email":true,
         "receiver":"",

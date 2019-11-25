@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import json
 import uuid
 import os
@@ -16,40 +16,48 @@ app = Flask(__name__)
 @app.route('/api/hello')
 def api_hello():
 	hello()
-	return '{"result":true}'
+	# return '{"result":true}'
+	return jsonify(result=True)
 
 @app.route('/api/start-fire')
 def api_start_fire():
 	hello()
 	# start_fire()
-	return '{"result":true}'
+	# return '{"result":true}'
+	return jsonify(result=True)
 
 @app.route('/api/stop-fire')
 def api_stop_fire():
 	hello_stop()
 	# stop_fire()
-	return '{"result":false}'
+	# return '{"result":false}'
+	return jsonify(result=False)
 
 @app.route('/api/get-total-time')
 def api_get_total_time():
 	newTime = get_total_time()
-	return '{"current-time":' + str(newTime[0]) + ', "total-time":' + str(newTime[1]) + '}'
+	# return '{"current-time":' + str(newTime[0]) + ', "total-time":' + str(newTime[1]) + '}'
+	return jsonify(currentTime=newTime[0],totalTime=newTime[1])
 
 @app.route('/api/get-current-segment')
 def api_get_current_segment():
 	segIndex = get_current_segment()
-	return '{"segment":' + str(segIndex) + '}'
+	# return '{"segment":' + str(segIndex) + '}'
+	return jsonify(segment=segIndex)
 
 @app.route('/api/timezones')
 def api_timezones():
 	with open ("timezones.txt", "r") as zones:
 		zoneData = zones.read()
-		return zoneData
+		# return zoneData
+		return jsonify(zoneData)
 
 @app.route('/api/temperature')
 def api_temp():
 	print("getting temperature" + str(get_current_temperature()))
-	return '{"temp":' + str(get_current_temperature()) + '}'
+	# return '{"temp":' + str(get_current_temperature()) + '}'
+	currentTemp = get_current_temperature()
+	return jsonify(temp=currentTemp)
 
 @app.route('/api/delete-schedule', methods=['DELETE'])
 def delete_schedule():
@@ -57,7 +65,8 @@ def delete_schedule():
 	print("deleting schedule " + filename)
 	fullPath = os.path.join('schedules', filename)
 	os.remove(fullPath)
-	return '{"result":true}'
+	# return '{"result":true}'
+	return jsonify(result=True)
 
 
 @app.route('/api/import-schedule', methods=['POST'])
@@ -92,8 +101,10 @@ def import_schedule():
 			f.write('\n')
 
 	# return some json to reload the page
-	jsonResult = '{"result":' + str(file_uploaded).lower() + '}'
-	return jsonResult
+	# jsonResult = '{"result":' + str(file_uploaded).lower() + '}'
+	jsonResult = str(file_uploaded).lower()
+	return jsonify(result=jsonResult)
+	# return jsonResult
 
 @app.route('/api/create-schedule', methods=['POST'])
 def create_schedule():
@@ -112,8 +123,9 @@ def create_schedule():
 		json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
-
-	return '{"result":true}'
+	fullFileName = unique_filename + ".json"
+	return jsonify(filename=fullFileName)
+	# return jsonify('{"filename":"' + unique_filename +  '"}')
 
 @app.route('/api/list-schedules')
 def api_list_schedules():
@@ -132,10 +144,11 @@ def api_list_schedules():
 
 	print('sorting')
 	newData['schedules'].sort()
-	return newData
+	return jsonify(newData)
 
 @app.route('/api/get-schedule')
 def api_get_schedule():
+	# print(request)
 	filename = request.args.get('schedulePath')
 	print("getting schedule " + filename)
 
@@ -151,7 +164,8 @@ def api_get_schedule():
 				print(index, segment)
 		
 			return jsonFileData
-	return '{"result":"none"}'
+	# return jsonify('{"result":"none"}')
+	return jsonify(result="none")
 
 @app.route('/api/save-schedule', methods=['POST'])
 def save_schedule():
@@ -162,18 +176,19 @@ def save_schedule():
 
 		# Convert to degrees C/F
 		for segment in testJson['segments']:
-			print("RATE")
-			print(segment['rate'])
+			# print("RATE")
+			# print(segment['rate'])
 			segment['rate'] = segment['rate']
-			print("TEMP")
-			print(segment['temp'])
+			# print("TEMP")
+			# print(segment['temp'])
 			segment['temp'] = segment['temp']
 
 		json.dump(testJson, f, indent=4, separators=(',', ':'), sort_keys=True)
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
-	return '{"result":true}'
+	return jsonify(result=True)
+	# return '{"result":true}'
 
 
 @app.route('/api/load-settings')
@@ -182,19 +197,19 @@ def api_load_settings():
 	with open ("settings.json", "r") as getSettings:
 		settingsData = json.load(getSettings)
 		print(settingsData)
-		return settingsData
+		return jsonify(settingsData)
 
 @app.route('/api/load-status')
 def api_load_status():
 	with open ("status.json", "r") as getStatus:
 		statusData = json.load(getStatus)
-		return statusData
+		return jsonify(statusData)
 
 @app.route('/api/load-totals')
 def api_load_totals():
 	with open ("totals.json", "r") as getTotals:
 		totalsData = json.load(getTotals)
-		return totalsData
+		return jsonify(totalsData)
 
 # This is kind of hacky and needs some cleanup
 @app.route('/api/update-settings', methods=['POST'])
@@ -229,7 +244,7 @@ def update_settings():
 		json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
-	return '{"result":true}'
+	return jsonify(result=True)
 
 # gets most up to date temperature units in settings
 def get_units():
