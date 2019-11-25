@@ -16,7 +16,7 @@ app = Flask(__name__)
 @app.route('/api/hello')
 def api_hello():
 	hello()
-	return 'hello ran'
+	return '{"result":true}'
 
 @app.route('/api/start-fire')
 def api_start_fire():
@@ -57,7 +57,7 @@ def delete_schedule():
 	print("deleting schedule " + filename)
 	fullPath = os.path.join('schedules', filename)
 	os.remove(fullPath)
-	return 'Deleted ' + filename
+	return '{"result":true}'
 
 
 @app.route('/api/import-schedule', methods=['POST'])
@@ -113,7 +113,7 @@ def create_schedule():
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
-	return unique_filename + ".json"
+	return '{"result":true}'
 
 @app.route('/api/list-schedules')
 def api_list_schedules():
@@ -173,7 +173,7 @@ def save_schedule():
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
-	return 'saved'
+	return '{"result":true}'
 
 
 @app.route('/api/load-settings')
@@ -229,7 +229,7 @@ def update_settings():
 		json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
-	return request.form
+	return '{"result":true}'
 
 # gets most up to date temperature units in settings
 def get_units():
