@@ -99,6 +99,8 @@ Install PIP, Flask, and Git
 
 sudo pip install flask -y
 
+sudo pip install pytz
+
 sudo apt-get install git -y`
 
 Download latest release of PiKiln

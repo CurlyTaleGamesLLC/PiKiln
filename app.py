@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Flask, render_template, request
 import json
 import uuid
@@ -149,7 +151,7 @@ def api_get_schedule():
 				print(index, segment)
 		
 			return jsonFileData
-	return 'No Schedule'
+	return '{"result":"none"}'
 
 @app.route('/api/save-schedule', methods=['POST'])
 def save_schedule():
