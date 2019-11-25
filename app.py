@@ -148,7 +148,7 @@ def api_list_schedules():
 
 @app.route('/api/get-schedule')
 def api_get_schedule():
-	# print(request)
+	print(request)
 	filename = request.args.get('schedulePath')
 	print("getting schedule " + filename)
 
@@ -163,9 +163,10 @@ def api_get_schedule():
 				jsonFileData['segments'][index]['temp'] = segment['temp']
 				print(index, segment)
 		
-			return jsonFileData
+			return jsonify(jsonFileData)
 	# return jsonify('{"result":"none"}')
-	return jsonify(result="none")
+
+	return jsonify(result=False)
 
 @app.route('/api/save-schedule', methods=['POST'])
 def save_schedule():
