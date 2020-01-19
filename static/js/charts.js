@@ -167,47 +167,44 @@
 // });
 
 
-
-
-
-
-
-
-
 ////GRAPH DATA
-
 window.onload = function () {
-    LoadLineGraph();
-    //var ctx = document.getElementById('canvas').getContext('2d');
-    //window.myLine = new Chart(ctx, config);
-
+    LoadChart();
 };
+
+function LoadChart() {
+    $.getJSON("api/get-chart", function (result) {
+      console.log(result);
+      LoadLineGraph(result['start-time'], result['temp-log'], result['schedule-log']);
+    });
+}
 
 function newDate(mins) {
     return moment().add(mins, 'm').toDate();
 }
 
-function TimeRange(values){
+function TimeRange(startTime, values){
+    var startValue = moment(startTime, 'YYYY/MM/DD HH:mm:ss');
     var range = [];
     for(var i = 0; i < values; i++){
-        range.push(newDate(i));
+        range.push(startValue.add(1, 'm').toDate());
     }
     return range;
 }
 
 
-function LoadLineGraph() {
+function LoadLineGraph(startTime, actual, scheduled) {
     var ctx = document.getElementById('canvas').getContext('2d');
     var pointSize = 5;
-
     var jsonData = {};
 
-    jsonData['time'] = TimeRange(10);
+    jsonData['time'] = TimeRange(startTime, actual.length);
     console.log(jsonData['time'][0]);
-    jsonData['scheduled'] = [0,1,2,3,4,5,6,7,8,9];
-    jsonData['actual'] = [0,3,2,5,3,2,1,2,5,8];
+    jsonData['scheduled'] = scheduled;
+    jsonData['actual'] = actual;
 
-
+    //jsonData['scheduled'] = [0,1,2,3,4,5,6,7,8,9];
+    //jsonData['actual'] = [0,3,2,5,3,2,1,2,5,8];
 
     var chart = new Chart(ctx, {
         // The type of chart we want to create

@@ -28,15 +28,15 @@ Enter that IP address in your web browser on your phone or computer to access yo
 ## Requirements ##
 
 * Software
-	* python 2.7
+	* python 3.3+
 	* pip
 	* Flask
 	* git
 * Hardware
 	* Raspberry Pi 3B or later
 	* Class 10 MicroSD card 16GB or more
-	* Adafruit MCP9600 Module
-	* K Type Thermocouple
+	* Adafruit MAX31855 Module
+	* High Temperature K Type Thermocouple Sensor for Ceramic Kiln Furnace
 	* Two 40 Amp Solid State Relays
 	* 100A 50ma Non Invasive Current Sensor
 	* ADC ADS1115 Module
@@ -131,3 +131,26 @@ Look for the line starts “xserver-command” under “[Seat:*]” section and 
 * Delayed Start
 * Temperature Email Notification - triggered via firing schedule
 * GPIO output for venting with a fan - triggered via firing schedule
+
+# External Libraries #
+This project makes use of the following libraries: 
+
+Adafruit MAX31856 Library
+
+https://github.com/adafruit/Adafruit_CircuitPython_MAX31855
+
+https://github.com/johnrbnsn/Adafruit_Python_MAX31856
+
+Ivmech PID Controller
+
+https://github.com/ivmech/ivPID
+
+
+# References #
+This project was written from scratch, however I did reference jbruce's Kiln Controller
+
+https://github.com/jbruce12000/kiln-controller
+
+Which began as a fork of Apollo-ng's picoReflow 
+
+https://github.com/apollo-ng/picoReflow

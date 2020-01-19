@@ -20,8 +20,9 @@ const newTr = `
     </td>
 </tr>`;
 
+//Start Firing Schedule
 $('#btn-start-schedule').click(function () {
-  $.getJSON("api/start-fire", function (result) {
+  $.getJSON("api/start-fire?schedulePath=" + loadedSchedule['path'], function (result) {
     console.log(result);
     $('#btn-start-schedule-modal').addClass('d-none');
     $('#btn-stop-schedule-modal').removeClass('d-none');
@@ -31,6 +32,7 @@ $('#btn-start-schedule').click(function () {
   });
 });
 
+//Stop Firing Schedule
 $('#btn-stop-schedule').click(function () {
   $.getJSON("api/stop-fire", function (result) {
     console.log(result);
@@ -42,22 +44,19 @@ $('#btn-stop-schedule').click(function () {
   });
 });
 
+//updates time left and progress bar on home page
 function UpdateTimer(currentTime, totalTime){
   var percent = currentTime/totalTime;
   $('#home-time-bar').css("width", (percent * 100).toFixed(2) + '%');
-
   $('#home-time-remaining').text(FormatTime(totalTime - currentTime));
 }
 
 
 $('#btn-add-segment').click(function () {
   const $clone = $TABLE.find('tbody tr').last().clone(true).removeClass('hide table-line');
-
   if ($TABLE.find('tbody tr').length === 0) {
-
     $('tbody').append(newTr);
   }
-
   $TABLE.find('table').append($clone);
 });
 
@@ -121,10 +120,7 @@ $('#btn-save-schedule').click(function () {
 
 $('#btn-delete-schedule').click(function () {
   console.log("Schedule Deleted");
-
-  if (editSchedule == null) {
-    return;
-  }
+  if (editSchedule == null) {return;}
 
   $.ajax({
     url: 'api/delete-schedule?schedulePath=' + editSchedule,
@@ -136,10 +132,7 @@ $('#btn-delete-schedule').click(function () {
       $('#schedule-title').text('');
       $('#schedule-body').html('');
       $("#schedule-group").addClass('d-none');
-
       editSchedule = null;
-
-      // Do something with the result
     }
   });
 
@@ -157,11 +150,41 @@ $('#btn-create-schedule').click(function () {
   });
 });
 
+$('#btn-duplicate-schedule').click(function () {
+  console.log("Schedule Duplicated");
+  if (editSchedule == null) {return;}
+
+  $.post("api/duplicate-schedule", {schedulePath: editSchedule}, function (data) {
+    console.log(data);
+    console.log(data['filename']);
+
+    var newScheduleOption = '<option value="' + data['filename'] + '">' + data['name'] + '</option>'
+    $('#fireScheduleList').html($('#fireScheduleList').html() + newScheduleOption);
+    $("#fireScheduleList").val(data['filename']).change();
+    //$("#schedule-group").removeClass('d-none');
+  });
+});
+
 $('#btn-download-schedule').click(function () {
   console.log("Download Schedule");
   var selectedSchedule =  $('select[name="fireScheduleList"]').val();
   if (selectedSchedule != "select-schedule") {
-    window.open('api/get-schedule?schedulePath=' + selectedSchedule);    
+    $.getJSON('api/get-schedule?schedulePath=' + selectedSchedule, function (result) {
+      var json = JSON.stringify(result);
+      var blob = new Blob([json], {type: "application/json"});
+      var url  = URL.createObjectURL(blob);
+
+      var link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', result['name'] + '.json');
+      
+      var aj = $(link);
+      aj.appendTo('body');
+      aj[0].click();
+      aj.remove();
+      
+      URL.revokeObjectURL(url);
+    });
   }
 });
 
@@ -177,23 +200,16 @@ $('#import-schedule').on('change', function () {
 
 
 $TABLE.on('click', '.table-remove', function () {
-
   $(this).parents('tr').detach();
 });
 
 $TABLE.on('click', '.table-up', function () {
-
   const $row = $(this).parents('tr');
-
-  if ($row.index() === 0) {
-    return;
-  }
-
+  if ($row.index() === 0){return;}
   $row.prev().before($row.get(0));
 });
 
 $TABLE.on('click', '.table-down', function () {
-
   const $row = $(this).parents('tr');
   $row.next().after($row.get(0));
 });
@@ -232,45 +248,37 @@ $BTN.on('click', () => {
   $EXPORT.text(JSON.stringify(data));
 });
 
-//  function ReIndexSegments(){
-//     $TABLE.find('table')
-//  }
-
 function LoadSettings() {
   $.getJSON("api/load-settings", function (result) {
     console.log(result);
     $('#cost').val(result['cost']);
     $('#max-temp').val(result['max-temp']);
+    $('#offset-temp').val(result['offset-temp']);
     $('#volts').val(result['volts']);
     $("#timezone").val(result['notifications']['timezone']);
 
     var units = (result['units'] == "celsius")
     console.log("units = " + units);
 
-    if (units) {
-      $("#tempRadios2").removeAttr('checked');
-      $("#tempRadios1").prop("checked", true);
-    }
-    else {
-      $("#tempRadios1").removeAttr('checked');
-      $("#tempRadios2").prop("checked", true);
-    }
+    $('#units-setting').bootstrapToggle(units ? "off" : "on");
+    // if (units) {
+    //   $("#units-setting").removeAttr('checked');
+    // }
+    // else {
+    //   $("#units-setting").prop("checked", true);
+    // }
 
     var enableEmail = result['notifications']['enable-email'];
-    if (enableEmail) {
-      $("#enable-email-off").removeAttr('checked');
-      $("#enable-email-on").prop("checked", true);
-    }
-    else {
-      $("#enable-email-on").removeAttr('checked');
-      $("#enable-email-off").prop("checked", true);
-    }
+    $('#toggle-email').bootstrapToggle(enableEmail ? "on" : "off");
+    
 
     $('#sender').prop('value', result['notifications']['sender']);
     $('#sender-password').prop('value', result['notifications']['sender-password']);
     $('#receiver').prop('value', result['notifications']['receiver']);
   });
 }
+
+
 
 function LoadSchedules() {
   $.getJSON("api/list-schedules", function (result) {
@@ -295,6 +303,11 @@ $('#btn-save-settings').click(function () {
     console.log(data);
     //$('.alert').alert()
     $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-3" role="alert" id="alert-save-settings"><strong>Settings Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+
+    setTimeout(function () {
+      $('#alert-container').html('')
+    }, 4000);
+    
   },
     'json' // I expect a JSON response
   );
@@ -357,18 +370,21 @@ function UpdateEstimateTime(){
   //assume room temperature
   //editSchedule
   var startTemp = loadedUnits == "fahrenheit" ? 72 : 22.222;
+  startTemp = 0;
 
   for(var i = 0; i < loadedSchedule['segments'].length; i++){
     var tempDifference = Math.abs(loadedSchedule['segments'][i]['temp'] - startTemp)
     var rampTime = (tempDifference/loadedSchedule['segments'][i]['rate']) * 60;
     //console.log("seg + " + rampTime);
-		totalLength += rampTime;
+		totalLength += rampTime * 60;
 		//console.log("hold + " + loadedSchedule['segments'][i]['hold']);
-		totalLength += loadedSchedule['segments'][i]['hold'];
+    totalLength += loadedSchedule['segments'][i]['hold'];
+    startTemp = loadedSchedule['segments'][i]['temp'];
   }
   //console.log("totalLength = " + totalLength);
 
   $('#home-time').text(FormatTime(totalLength));
+  $('#home-time-summary').text(FormatTime(totalLength));
   return totalLength
 }
 
@@ -388,8 +404,6 @@ function LoadSegment(rate, temp, hold, isEdit) {
 }
 
 
-
-
 var currentUnits;
 function GetSettings() {
   $.getJSON("api/load-settings", function (result) {
@@ -403,25 +417,44 @@ function GetSettings() {
 }
 
 function GetStatus() {
-  $.getJSON("api/load-status", function (result) {
+  $.getJSON("api/get-current-status", function (result) {
     console.log(result);
-    $('#status-schedule').text(result['name']);
-    $('#status-state').text(result['status']);
-    $('#status-start-time').text(result['start-time']);
 
-    $.getJSON("api/temperature", function (result2) {
-      var tempUnits = result['units'] == "celsius" ? "°C" : "°F";
-      var tempUnitsText = result2['temp'] + tempUnits;
-      $('#home-current-temperature').text(tempUnitsText);
-      $('#status-temp').text(tempUnitsText);
-    });
+    //display the name of the firing schedule in the nav bar
+    if(result['status'] == "firing"){
+      $.getJSON("api/get-current-schedule", function (result2) {
+        $('.current-schedule').each(function () {$(this).text(" | " + result2['name'])});
+      });
+    }
+    else{
+      $('.current-schedule').each(function () {$(this).text("")});
+    }
 
+    if(result['status'] == "complete"){
+      console.log("COMPLETE");
+      //$('#home-time-summary').text();
+      $('#home-cost-summary').text("$3.55");      
+      $('#home-complete').removeClass("d-none");
+      $('#time-cost-estimates').addClass("d-none");
+    }
+    else if(result['status'] == "error"){
+      console.log("ERROR");
+      $('#home-error-title').text(" Faulty Relay #1");
+      $('#home-error-message').text("The 1st relay is not properly turning off or on. Please turn off power and replace the faulty relay with a new one");
+      $('#home-error').removeClass("d-none");
+      $('#time-cost-estimates').addClass("d-none");
+    }
+     
+    //$('#status-state').text(result['status']);
+    //$('#status-start-time').text(result['start-time']);
+
+    //update currently selected segment on the home page
     if (window.location.pathname == "/" || window.location.pathname == "/index") {
-      $.getJSON("api/get-current-segment", function (result3) {
-        console.log(result3)
+      $.getJSON("api/get-current-segment", function (result2) {
+        console.log(result2)
         $('.segment-row').each(function () {
           var isFiring = result['status'] == "firing"
-          var isSegmentIndex = $(this).index() == result3['segment']
+          var isSegmentIndex = $(this).index() == result2['segment']
           if (isFiring && isSegmentIndex) {
             $(this).addClass("current-segment");
             $(this).addClass("text-light");
@@ -435,10 +468,22 @@ function GetStatus() {
     }
 
   });
+
+   //update the current temperature inside the kiln in the nav bar
+   $.getJSON("api/temperature", function (result) {
+     //need to pass units as well with temp
+     console.log(result);
+    var tempUnits = result['units'] == "celsius" ? "°C" : "°F";
+    var tempUnitsText = result['temp'] + tempUnits;
+    $('.current-temperature').each(function () {$(this).text(tempUnitsText)});
+  });
+
+  //update time remaining
   $.getJSON("api/get-total-time", function (result) {
-    //console.log(result);
-    //UpdateTimer(result['currentTime'], result['totalTime']);
-    UpdateTimer(result['totalTime']/2, result['totalTime']);
+    console.log("time");
+    console.log(result);
+    UpdateTimer(result['currentTime'], result['totalTime']);
+    //UpdateTimer(result['totalTime']/2, result['totalTime']);
   });
 }
 
@@ -479,6 +524,13 @@ function NumbersOnly(){
     }
   });
 }
+
+//deselect input fields
+$(document).on('keypress',function(e) {
+  if(e.which == 13) {
+      $(':focus').blur()
+  }
+});
 
 $(document).ready(function () {
   HighlightNav();
@@ -521,8 +573,12 @@ function f2c(value){
 
 //format time to be hours:mins (2:45)
 function FormatTime(value){
-  var hours = Math.floor(value / 60).toString();
-  var mins = Math.floor(value % 60).toString();
+  valueMins = value / 60;
+  if(valueMins < 0){
+    valueMins = 0;
+  }
+  var hours = Math.floor(valueMins / 60).toString();
+  var mins = Math.floor(valueMins % 60).toString();
   if(mins.length < 2){
     mins = "0" + mins;
   }
@@ -566,8 +622,7 @@ function ScrapeTable(){
       index++;
       newHtml += '</tr>';
     }
-    
-    //var customerId = $(this).find("td").eq(2).html();    
+     
   });
   return newHtml;
 }

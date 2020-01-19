@@ -1,0 +1,8 @@
+[Unit]
+Description=pikiln
+
+[Service]
+ExecStart=/home/pi/PiKiln/py -3 /home/pi/PiKiln/app.py
+
+[Install]
+WantedBy=multi-user.target

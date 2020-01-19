@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="en" class="h-100">
-<head>
-  <title>Home</title>
-  {% include 'head.html' %}
-</head>
+
+{% with title="Home" %}
+{% include 'head.html' %}
+{% endwith %}
+
 
 <body class="d-flex flex-column h-100">
   {% include 'nav.html' %}
@@ -45,17 +46,18 @@
       
 
       <div class="row">
-        <h5 class="col-12 mb-3">Current Temperature: <span id="home-current-temperature">220°F</span></h5>
+        <h5 class="col-12 mb-3"><i class="fas fa-thermometer-half"></i> Current Temperature: <span class="current-temperature" id="home-current-temperature">220°F</span></h5>
 
+        <div id="time-cost-estimates" class="col-12">
         <!--cost estimates-->
-        <ul id="home-estimates" class="list-group col-12 mb-4">
+        <ul id="home-estimates" class="list-group col-12 mb-3">
           <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">1:00</span></li>
-          <li class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">$3.50</span></li>
+          <!-- <li class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">$3.50</span></li> -->
         </ul>
         
-        <div id="home-time-group" class="col-12">
+        <div id="home-time-group" class="row mb-3">
           
-          <h5>Time Remaining: <span id="home-time-remaining">0:00</span></h5>
+          <h5 class="col-12"><i class="fas fa-hourglass-half"></i> Time Remaining: <span id="home-time-remaining">0:00</span></h5>
         
           <div class="progress">
             <div id="home-time-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
@@ -63,14 +65,29 @@
         
         </div>
         </div>
+        </div>
+
+        <div id="home-complete" class="row d-none">
+          <h5 class="col-12"><i class="fas fa-flag-checkered"></i> Firing Complete:</h5>
+          <!--cost estimates-->
+          <ul id="home-summary" class="list-group col-12 mb-4">
+            <li class="list-group-item"><b>Total Time:</b> <span id="home-time-summary">1:00</span></li>
+            <li class="list-group-item"><b>Cost:</b> <span id="home-cost-summary">$3.50</span></li>
+          </ul>
+        </div>
+
+        <div id="home-error" class="row d-none">
+          <h5 class="col-12"><i class="fas fa-exclamation-triangle"></i><span id="home-error-title"> Faulty Relay #1</span></h5>
+          <p id="home-error-message" class="col-12">The firing schedule was stopped due to </p>
+        </div>
 
       
 
       <!--start firing schedule-->
-      <div class="row mt-4 mb-3">
+      <div class="row mb-3">
         <div class="col-12 text-right">
-            <button data-toggle="modal" data-target="#start-confirm-modal" id="btn-start-schedule-modal" class="btn mb-2 full-width2 btn-primary d-none"><i class="fas fa-burn"></i> Start Schedule</button>
-            <button data-toggle="modal" data-target="#stop-confirm-modal" id="btn-stop-schedule-modal" class="btn mb-2 full-width2 btn-danger"><i class="fas fa-ban"></i> Stop Schedule</button>
+            <button data-toggle="modal" data-target="#start-confirm-modal" id="btn-start-schedule-modal" class="btn mb-2 full-width-small btn-primary d-none"><i class="fas fa-burn"></i> Start Schedule</button>
+            <button data-toggle="modal" data-target="#stop-confirm-modal" id="btn-stop-schedule-modal" class="btn mb-2 full-width-small btn-danger"><i class="fas fa-ban"></i> Stop Schedule</button>
         </div>
       </div>
 
@@ -81,43 +98,13 @@
 
   {% include 'footer.html' %}
 
-  <!-- Modal -->
-  <div class="modal fade" id="start-confirm-modal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modal-title-id">Start Firing Schedule?</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
-          <button type="button" id="btn-start-schedule" class="btn btn-primary" data-dismiss="modal"><i class="fas fa-burn"></i> Start Schedule</button>
-        </div>
-      </div>
-    </div>
-  </div>
+{% with modalid="start-confirm-modal", modaltitle="Start Firing Schedule?", modalbody="", buttonid="btn-start-schedule", modalbutton="<i class='fas fa-burn'></i> Start Schedule" %}
+{% include 'modal-primary.html' %}
+{% endwith %}
 
-  <!-- Modal -->
-  <div class="modal fade" id="stop-confirm-modal" tabindex="-1" role="dialog">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modal-title-id">Stop Firing Schedule?</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
-            <button type="button" id="btn-stop-schedule" class="btn btn-danger" data-dismiss="modal"><i class="fas fa-ban"></i> Stop Schedule</button>
-          </div>
-        </div>
-      </div>
-    </div>
+{% with modalid="stop-confirm-modal", modaltitle="Stop Firing Schedule?", modalbody="", buttonid="btn-stop-schedule", modalbutton="<i class='fas fa-ban'></i> Stop Schedule" %}
+{% include 'modal-danger.html' %}
+{% endwith %}
 
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script>

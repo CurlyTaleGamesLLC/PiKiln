@@ -1,26 +1,16 @@
 {
     "name":"Test Schedule",
-    "path":"034f2990-7151-4b1b-8e4a-2e7855f641c0.json",
+    "path":"73956579-3efb-4eb2-96d8-557c7e63557a.json",
     "segments":[
         {
-            "hold":40,
+            "hold":0,
             "rate":100,
-            "temp":400
+            "temp":500
         },
         {
-            "hold":30,
+            "hold":0,
             "rate":100,
-            "temp":600
-        },
-        {
-            "hold":40,
-            "rate":100,
-            "temp":300
-        },
-        {
-            "hold":10,
-            "rate":100,
-            "temp":400
+            "temp":1000
         }
     ],
     "units":"fahrenheit"

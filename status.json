@@ -1,11 +1,20 @@
 {
-    "current-temp":220,
     "error":"",
     "filename":"1234",
     "name":"Test Schedule",
-    "start-time":"2019-11-28 12:42:00",
-    "status":"firing",
+    "start-time":"2019-11-30 23:02:26",
     "temp-log":[
+        100,
+        150,
+        270,
+        350,
+        400,
+        450,
+        500,
+        600,
+        700
+    ],
+    "schedule-log":[
         100,
         200,
         300,

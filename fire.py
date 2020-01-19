@@ -8,90 +8,123 @@ import time
 import threading
 import random
 
+import sensors
 
-activeSchedule = json.dumps('{"placeholder":true}')
+
+fireSchedule = json.dumps('{"placeholder":true}')
+fireScheduleLoaded = False
+fireScheduleName = ""
+fireStatus = "firing"
+fireScheduleUnits = "fahrenheit"
+
 # targetTemp = 0
 # currentTemp = 0
-startTemp = 15
+fireStartTemp = 100
+fireCurrentTemp = 100
 
-progressTime = 0
-phaseLength = 300
-phaseIndex = 0
-segmentIndex = 0
-totalLength = 0
+offset = 0
 
-t0 = time.time()
+fireProgressTime = 0
+firePhaseLength = 300
+firePhaseIndex = 0
+fireSegmentIndex = 0
+fireTotalLength = 0
+
+fireStartTime = time.time()
 stop_threads = False
-
-
-# find the current temperature for the ramp phase or the hold phase of a segment
-def current_target(targetTemp, ratePerHour, currentTime, holdTime):
-	global startTemp
-	global phaseLength
-	tempDifference = targetTemp - startTemp
-	timeTotalMins = holdTime
-	if holdTime == 0:
-		timeTotalMins = abs((float(tempDifference) / float(ratePerHour)) * 60)
-	rampPercent = float(currentTime) / float(timeTotalMins)
-	currentTargetTemp = (rampPercent * tempDifference) + startTemp
-	phaseLength = timeTotalMins
-	print(currentTargetTemp)
-	return currentTargetTemp
 
 def get_current_temperature():
 	return random.randrange(50,100)
 
+def get_current_units():
+	return fireScheduleUnits
+
 def get_current_segment():
-	return segmentIndex
+	return fireSegmentIndex
+
+def get_current_schedule_name():
+	return fireScheduleName
+
+def get_current_status():
+	return fireStatus
 
 def get_total_time():
-	global activeSchedule
-	global startTemp
-	global totalLength
-	global progressTime
+	global fireSchedule
+	global fireStartTemp
+	global fireTotalLength
+	global fireProgressTime
 
 	load_schedule()
 
-	totalLength = 0
-
-	for segment in activeSchedule['segments']:
-		# print("seg + " + str(abs(float(segment['temp'] - startTemp))/float(segment['rate']) * 60))
-		totalLength += abs((float(segment['temp'] - startTemp)/float(segment['rate'])) * 60)
-		# print("hold + " + str(segment['hold']))
-		totalLength += segment['hold']
-
-	totalLength = totalLength
-	print("totalLength = " + str(totalLength))
-	return progressTime, totalLength
-
-
-def get_phase_data(index):
-	global segmentIndex
-	newRate = 1
-	newHold = 0
-	newIndex = (index - (index % 2))/2
-	segmentIndex = newIndex
-	print("index = " + str(index) + " new index = " + str(newIndex))
-	if index % 2 == 0:
-		print("RAMPING")
-		newRate = activeSchedule['segments'][newIndex]['rate']
-	else:
-		print("HOLDING")
-		newHold = activeSchedule['segments'][newIndex]['hold']
+	# fireTotalLength = total_time(fireSchedule, fireStartTemp)
+	fireTotalLength = get_schedule_time(fireSchedule, fireStartTemp, -1)
 	
-	return activeSchedule['segments'][newIndex]['temp'], newRate, newHold
+	return fireProgressTime, fireTotalLength
+
+# returns number of seconds in all of the phases of a firing schedule, or just a single phase with segmentIndex
+def get_schedule_time(schedule, startTemp, segmentIndex):
+	schedule_time = 0.0
+	phase_time = 0.0
+	lastTemp = float(startTemp)
+
+	# add time for each phase of each segment
+	for i in range(len(schedule['segments']) * 2):
+		newIndex = int((i - (i % 2))/2)
+
+		if i % 2 == 0:
+			# print("RAMPING")
+			rate = schedule['segments'][newIndex]['rate']
+			target = schedule['segments'][newIndex]['temp']
+			phase_time = get_ramp_time(rate, target, lastTemp)
+		else:
+			# print("HOLDING")
+			phase_time = float(schedule['segments'][newIndex]['hold'])
+
+		# only return a single phase time of a segment
+		if segmentIndex == i:
+			return phase_time * 60.0
+
+		schedule_time += phase_time
+
+		lastTemp = float(schedule['segments'][newIndex]['temp'])
+
+	return schedule_time * 60.0
+
+# how long it will take to get to the target phase in minutes
+def get_ramp_time(rate, target, lastTemp):
+	phaseDifference = float(target) - lastTemp
+	return abs((float(phaseDifference) / float(rate) * 60.0))
 
 
+# Main loop that sets temperature of kiln based on schedule and current temp
 def schedule_loop():
-	global phaseIndex
-	global startTemp
-	global t0
-	global phaseLength
-	global activeSchedule
-	global progressTime
+	global firePhaseIndex
+	global fireSegmentIndex
+	global fireStartTemp
+	global fireStartTime
+	global firePhaseLength
+	global fireSchedule
+	global fireProgressTime
+	global fireStatus
+	global fireCurrentTemp
+	global fireTotalLength
+	global offset
 	
 	firingComplete = False
-	progressTime = 0
+	isStartTempSet = False
+	fireProgressTime = 0
+	logTime = 60
+	firePhaseIndex = 0
+
+	# speed used to simulate schedules faster
+	speed = 60.0 * 5
+	speed = 1.0
+
+	phaseStartTime = time.time()
+	phaseStartTemp = fireCurrentTemp
+
+	actualTime = 0
+
 
 	while not firingComplete:
 
@@ -100,79 +133,130 @@ def schedule_loop():
 			print("THREAD STOPPED")
 			break
 
-		time.sleep(1)
-		t1 = time.time()
-		speed = 5
+		currentTime = time.time()
 
-		progressTime += float(t1-t0) * speed
+		fireProgressTime = float(currentTime-fireStartTime) * speed
 
-		print("segments = " + str(len(activeSchedule['segments'])))
-		if phaseIndex < ((len(activeSchedule['segments'])) * 2):
+		# set the temperature to the correct value based on the segments in the firing schedule
+		# print("segments = " + str(len(fireSchedule['segments'])))
+
+		# Each segment has a ramp and a hold phase, so the number of phases is twice the number of segments
+		if firePhaseIndex < ((len(fireSchedule['segments'])) * 2):
+
+			if not isStartTempSet:
+				fireStartTemp = 0
+				isStartTempSet = True
+	
+			# How many seconds have gone by in this segment phase
+			phaseTime = float(currentTime-phaseStartTime) * speed
+
+			phaseLength = get_schedule_time(fireSchedule, fireStartTemp, firePhaseIndex)
+			# multiply by speed?
+
+			# what percentage the phase is complete
+			if phaseLength == 0:
+				rampPercent = 1.0
+			else:
+				rampPercent = float(phaseTime) / float(phaseLength)
+
+			# how many degrees to the segment target temperature
+			newIndex = int((firePhaseIndex - (firePhaseIndex % 2))/2)
+			fireSegmentIndex = int(firePhaseIndex/2)
+			phaseTemp = fireSchedule['segments'][newIndex]['temp']
+			phaseDifference = phaseTemp - phaseStartTemp
+
+			if newIndex % 2 == 0:
+				print("RAMPING")
+			else:
+				print("HOLDING")
+
+			# based on the starting temperature, and how far along we are in the phase set the target temperature
+			targetTemp = phaseStartTemp + (rampPercent * phaseDifference)
 			
-			data = get_phase_data(phaseIndex)
-			nowTemp = current_target(data[0], data[1], float(t1-t0) * speed, data[2])
+			# this would be reading from the temperature sensor, just get the value from the target temp for now
+			fireCurrentTemp = targetTemp - offset
+			
+			print("phase index = " + str(firePhaseIndex) + " " + str(phaseTime) + "/" + str(phaseLength) + "   " + str(fireProgressTime) + "/" + str(fireTotalLength))
 
-			print("phase index = " + str(phaseIndex) + " " + str(float(t1-t0)) + "/" + str(phaseLength/speed))
+			# To Do: Add GPIO Relay Temperature Control
 
-			if t1-t0 > phaseLength/speed:
-				print("half minute over, (not a precise timing) ")
-				t0 = time.time()
-				startTemp = nowTemp
-				phaseIndex += 1
+			# Log Temperature
+			logTime += 1
+			if logTime  > 14:
+				logTime = 0
+				print("LOGGING " + str(fireCurrentTemp) + " " + str(targetTemp))
+				log_add_data(fireCurrentTemp, targetTemp)
+				# add amp sensor reading to log
+
+			# Check if segment phase has completed
+			if phaseTime > phaseLength:
+				print("Segment Phase Complete")
+				actualTime += phaseTime
+				phaseStartTime = time.time()
+				phaseStartTemp = fireCurrentTemp
+				firePhaseIndex += 1	
 		else:
-			firingComplete = True
 			print("FIRING COMPLETE")
+			fireStatus = "complete"
+			firingComplete = True
+
+		time.sleep(1)
 
 def load_schedule():
-	global activeSchedule
-	tzone = "Etc/GMT+3"
+	global fireSchedule
+	global fireScheduleLoaded
 
-	with open ('active.json', "r") as fileData:
-			activeSchedule = json.load(fileData)
-			print(activeSchedule)
-			
-			update_status_data(
-				activeSchedule['name'],
-				"firing",
-				"",
-				activeSchedule['units'],
-				tzone
-				)
+	if not fireScheduleLoaded:
+		fireScheduleLoaded = True
+		print("READING ACTIVE.JSON")
+		with open ('active.json', "r") as fileData:
+				fireSchedule = json.load(fileData)
+				print(fireSchedule)
+				
+				# update_status_data(
+				# 	fireSchedule['name'],
+				# 	"firing",
+				# 	"",
+				# 	fireSchedule['units'],
+				# 	tzone
+				# 	)
 
 
 def start_fire():
 	print("FIRING!")
 
-	global activeSchedule
-	global startTemp
+	global fireSchedule
+	global fireStartTemp
+	global fireCurrentTemp
+	global fireStartTime
 	global fireThread
 	global stop_threads
+	global fireScheduleLoaded
+	global fireStatus
+	global offset
 
-	startTemp = 20
+	fireStartTemp = 100
+	fireCurrentTemp = 100
+	fireStartTime = time.time()
 
 	# Load Settings
+	print("READING SETTINGS.JSON")
 	with open('settings.json') as json_file:
 		data = json.load(json_file)
 		tzone = data['notifications']['timezone']
 		print(tzone)
 
-		# Load Schedule
-		# with open ('active.json', "r") as fileData:
-		# 	activeSchedule = json.load(fileData)
-		# 	print(activeSchedule)
-			
-		# 	update_status_data(
-		# 		activeSchedule['name'],
-		# 		"firing",
-		# 		"",
-		# 		activeSchedule['units'],
-		# 		tzone
-		# 		)
+		offset = float(data['offset-temp'])
 
+		fireScheduleLoaded = False
 		load_schedule()
 
+		# Sets up log file for current schedule
+		log_data(fireSchedule['name'], fireSchedule['units'], tzone, fireTotalLength)
+	
 		# Start a Thread to allow firing sequence to run in the background
 		stop_threads = False
+		fireStatus = "firing"
 		fireThread = threading.Thread(target = schedule_loop) 
 		fireThread.start() 
 		# schedule_loop()
@@ -180,45 +264,89 @@ def start_fire():
 def stop_fire():
 	global fireThread
 	global stop_threads
+	global fireStatus
+
 	stop_threads = True
-	fireThread.join() 
+	try:
+		fireThread.join() 
+	except NameError:
+		print("well, it WASN'T defined after all!")
+
+	# if fireThread.isAlive():
+		
+	fireStatus = "canceled"
 	print('thread killed') 
 
 #  def update_status_temp(statusTemp):
 
-def update_status_data(statusName, statusStatus, statusError, statusUnits, statusTimezone):
-	with open ('status.json', "r") as fileData:
+# def update_status_data(statusName, statusStatus, statusError, statusUnits, statusTimezone):
+	
+# 	global fireScheduleName
+# 	global fireScheduleUnits
+
+# 	print("READING STATUS.JSON")
+# 	with open ('status.json', "r") as fileData:
+# 		jsonFileData = json.load(fileData)
+# 		jsonFileData['name'] = statusName
+# 		jsonFileData['error'] = statusError
+# 		jsonFileData['units'] = statusUnits
+# 		jsonFileData['timezone'] = statusTimezone
+
+# 		fireScheduleName = statusName
+# 		fireScheduleUnits = statusUnits
+
+# 		# current date and time
+# 		nowTime = datetime.now(tz=pytz.timezone(statusTimezone))
+# 		timestamp = nowTime.strftime("%Y-%m-%d %H:%M:%S")
+# 		print (timestamp)
+
+# 		jsonFileData['start-time'] = timestamp
+
+# 	print("WRITING STATUS.JSON")
+# 	with open('status.json', 'w') as f:
+# 		json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
+# 		#add trailing newline for POSIX compatibility
+# 		f.write('\n')
+
+def log_data(logName, logUnits, logTimezone, logTotalTime):
+
+	print ("SET UP LOG FILE")
+	logDataJSON = {}
+	logDataJSON['name'] = logName
+	logDataJSON['error'] = ""
+	logDataJSON['units'] = logUnits
+	logDataJSON['timezone'] = logTimezone
+	logDataJSON['total-time'] = logTimezone
+	logDataJSON['temp-log'] = []
+	logDataJSON['schedule-log'] = []
+
+	# current date and time
+	nowTime = datetime.now(tz=pytz.timezone(logTimezone))
+	timestamp = nowTime.strftime("%Y-%m-%d %H:%M:%S")
+	print (timestamp)
+
+	logDataJSON['start-time'] = timestamp
+
+	with open('log.json', 'w') as f:
+		json.dump(logDataJSON, f, indent=4, separators=(',', ':'), sort_keys=True)
+		#add trailing newline for POSIX compatibility
+		f.write('\n')
+
+# reads log.json and adds new temp to temp-log
+def log_add_data(newTemp, scheduledTemp):
+
+	with open ('log.json', "r") as fileData:
 		jsonFileData = json.load(fileData)
-		jsonFileData['name'] = statusName
-		jsonFileData['status'] = statusStatus
-		jsonFileData['error'] = statusError
-		jsonFileData['units'] = statusUnits
-		jsonFileData['timezone'] = statusTimezone
+		jsonFileData['temp-log'].append(newTemp)
+		jsonFileData['schedule-log'].append(scheduledTemp)
 
-		# current date and time
-		nowTime = datetime.now(tz=pytz.timezone(statusTimezone))
-		timestamp = nowTime.strftime("%Y-%m-%d %H:%M:%S")
-		print (timestamp)
-
-		jsonFileData['start-time'] = timestamp
-
-	with open('status.json', 'w') as f:
+	with open('log.json', 'w') as f:
 		json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
-#start_fire()
-
-def hello():
-	get_total_time()
-	print("Hello World!")
-
-def hello_stop():
-	print("Stop Hello World!")
-
-		
-		
-
-	
-
-	
+# COST ESTIMATION
+# Find the cooldown rate from normal firing
+# When the element is on measure the heating rate
+# Measure the heating rate based on what temperature it already is
+# Create a polynomial from the heating and cooling rates and time

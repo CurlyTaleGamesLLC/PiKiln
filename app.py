@@ -2,62 +2,108 @@
 
 from flask import Flask, render_template, request, jsonify
 import json
+import shutil
 import uuid
 import os
-from fire import hello, hello_stop, start_fire, stop_fire, get_total_time, get_current_temperature, get_current_segment
+import fire
 
 units = True
 
 def str2bool(v):
 	return v.lower() in ("yes", "true", "t", "1")
 
-app = Flask(__name__)
+def is_json_key_present(json, key):
+	try:
+		buf = json[key]
+	except KeyError:
+		return False
+	return True
 
-@app.route('/api/hello')
-def api_hello():
-	hello()
-	# return '{"result":true}'
-	return jsonify(result=True)
+def float_default(n,d):
+    try:
+        return float(n)
+    except ValueError:
+        return d
+
+def int_default(n,d):
+    try:
+        return int(n)
+    except ValueError:
+        return d
+
+app = Flask(__name__)
 
 @app.route('/api/start-fire')
 def api_start_fire():
-	hello()
-	# start_fire()
-	# return '{"result":true}'
+	# fire.hello()
+
+	# Copy selected schedule to active
+	print(request)
+	filename = request.args.get('schedulePath')
+	print("getting schedule " + filename)
+
+	src_file = os.path.join('schedules', filename)
+	shutil.copyfile(src_file, "active.json")
+
+	fire.start_fire()
 	return jsonify(result=True)
 
 @app.route('/api/stop-fire')
 def api_stop_fire():
-	hello_stop()
-	# stop_fire()
-	# return '{"result":false}'
+	# fire.hello_stop()
+	fire.stop_fire()
 	return jsonify(result=False)
 
 @app.route('/api/get-total-time')
 def api_get_total_time():
-	newTime = get_total_time()
-	# return '{"current-time":' + str(newTime[0]) + ', "total-time":' + str(newTime[1]) + '}'
+	newTime = fire.get_total_time()
 	return jsonify(currentTime=newTime[0],totalTime=newTime[1])
 
 @app.route('/api/get-current-segment')
 def api_get_current_segment():
-	segIndex = get_current_segment()
-	# return '{"segment":' + str(segIndex) + '}'
+	segIndex = fire.get_current_segment()
 	return jsonify(segment=segIndex)
 
-@app.route('/api/timezones')
-def api_timezones():
-	with open ("timezones.txt", "r") as zones:
-		zoneData = zones.read()
-		# return zoneData
-		return jsonify(zoneData)
+@app.route('/api/get-current-schedule')
+def api_get_current_schedule():
+	scheduleName = fire.get_current_schedule_name()
+	return jsonify(name=scheduleName)
+
+@app.route('/api/get-current-status')
+def api_get_current_status():
+	scheduleStatus = fire.get_current_status()
+	return jsonify(status=scheduleStatus)
 
 @app.route('/api/temperature')
 def api_temp():
-	print("getting temperature" + str(get_current_temperature()))
-	# return '{"temp":' + str(get_current_temperature()) + '}'
-	currentTemp = get_current_temperature()
-	return jsonify(temp=currentTemp)
+	# print("getting temperature" + str(fire.get_current_temperature()))
+	currentTemp = fire.get_current_temperature()
+	currentUnits = fire.get_current_units()
+	return jsonify(temp=currentTemp,units=currentUnits)
+
+@app.route('/api/duplicate-schedule', methods=['POST'])
+def duplicate_schedule():
+	# import file and create a unique filename
+	
+	filename = request.form.get('schedulePath')
+	src_file = os.path.join('schedules', filename)
+	print(src_file)
+	unique_filename = str(uuid.uuid4()) + ".json"
+	dst_file = os.path.join('schedules', unique_filename)
+	print(dst_file)
+	
+	# update path in imported schedule to be new filename
+	with open (src_file, "r") as fileData:
+		jsonFileData = json.load(fileData)
+		jsonFileData['path'] = unique_filename
+		newName = jsonFileData['name'] + ' (new)'
+		jsonFileData['name'] = newName
+
+	with open(dst_file, 'w') as f:
+		json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
+		#add trailing newline for POSIX compatibility
+		f.write('\n')
+	return jsonify(filename=unique_filename,name=jsonFileData['name'])
 
 @app.route('/api/delete-schedule', methods=['DELETE'])
 def delete_schedule():
@@ -65,7 +111,6 @@ def delete_schedule():
 	print("deleting schedule " + filename)
 	fullPath = os.path.join('schedules', filename)
 	os.remove(fullPath)
-	# return '{"result":true}'
 	return jsonify(result=True)
 
 
@@ -101,10 +146,8 @@ def import_schedule():
 			f.write('\n')
 
 	# return some json to reload the page
-	# jsonResult = '{"result":' + str(file_uploaded).lower() + '}'
 	jsonResult = str(file_uploaded).lower()
 	return jsonify(result=jsonResult)
-	# return jsonResult
 
 @app.route('/api/create-schedule', methods=['POST'])
 def create_schedule():
@@ -125,7 +168,6 @@ def create_schedule():
 		f.write('\n')
 	fullFileName = unique_filename + ".json"
 	return jsonify(filename=fullFileName)
-	# return jsonify('{"filename":"' + unique_filename +  '"}')
 
 @app.route('/api/list-schedules')
 def api_list_schedules():
@@ -139,11 +181,11 @@ def api_list_schedules():
 			print("reading " + fullPath)
 			with open (fullPath, "r") as fileData:
 				print(filename)
-				jsonFileData = json.load(fileData) #'\\schedules\\' + 
+				jsonFileData = json.load(fileData) 
 				newData['schedules'].append({'path':filename, 'name':jsonFileData['name']})
 
 	print('sorting')
-	newData['schedules'].sort()
+	newData['schedules'] = sorted(newData['schedules'], key = lambda i: i['name']) 
 	return jsonify(newData)
 
 @app.route('/api/get-schedule')
@@ -164,7 +206,6 @@ def api_get_schedule():
 				print(index, segment)
 		
 			return jsonify(jsonFileData)
-	# return jsonify('{"result":"none"}')
 
 	return jsonify(result=False)
 
@@ -189,7 +230,6 @@ def save_schedule():
 		f.write('\n')
 
 	return jsonify(result=True)
-	# return '{"result":true}'
 
 
 @app.route('/api/load-settings')
@@ -217,6 +257,8 @@ def api_load_totals():
 def update_settings():
 	global units
 	rawData = request.form
+
+	print(rawData)
 	
 	# reformat data from form
 	newData = {}
@@ -225,18 +267,23 @@ def update_settings():
 	newData['notifications']['sender'] = rawData['sender']
 	newData['notifications']['sender-password'] = rawData['sender-password']
 	newData['notifications']['receiver'] = rawData['receiver']
-	newData['notifications']['enable-email'] = str2bool(rawData['enable-email'])
+	# form has to send checked value of on in order for enable-email to have any value
+	newData['notifications']['enable-email'] = is_json_key_present(rawData, 'enable-email')
 	newData['cost'] = float(rawData['cost'])
 	newData['volts'] = float(rawData['volts'])
 
 	# convert max temp if units were changed
-	newData['units'] = rawData['units']
-	newData['max-temp'] = rawData['max-temp']
-	if units != rawData['units']:
+	isFahrenheit = is_json_key_present(rawData, 'units')
+	newData['units'] = "fahrenheit" if isFahrenheit else "celsius"
+
+	newData['max-temp'] = float(rawData['max-temp'])
+	if units != newData['units']:
 		if units == "celsius":
 			newData['max-temp'] = float(rawData['max-temp']) * 9 / 5 + 32
 		else:
 			newData['max-temp'] = (float(rawData['max-temp']) -32) * 5 / 9
+
+	newData['offset-temp'] = float_default(float(rawData['offset-temp']), 0.0)
 
 	units = newData['units']
 		
@@ -246,6 +293,13 @@ def update_settings():
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 	return jsonify(result=True)
+
+@app.route('/api/get-chart')
+def api_get_chart():
+	with open ("log.json", "r") as getStatus:
+		statusData = json.load(getStatus)
+		return jsonify(statusData)
+
 
 # gets most up to date temperature units in settings
 def get_units():
@@ -275,15 +329,14 @@ def render_settings():
 def render_logging():
 	return render_template('logging.html')
 
+# Prevents Caching of pages
 @app.after_request
 def set_response_headers(response):
-	print("CLEAR CACHE")
+	# print("CLEAR CACHE")
 	response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
 	response.headers['Pragma'] = 'no-cache'
 	response.headers['Expires'] = '0'
 	return response
-	
-
 	
 # @app.route('/<string:page_name>')
 # def render_static(page_name):
