@@ -5,9 +5,41 @@ import time
 import json
 import os
 
+# GPIO libraries
+import board
+import busio
+
+# libraries for temperature sensor
+import digitalio
+import adafruit_max31856
+
+# create a spi object
+spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+
+# allocate a CS pin and set the direction
+cs = digitalio.DigitalInOut(board.D5)
+cs.direction = digitalio.Direction.OUTPUT
+
+# create a thermocouple object with the above
+thermocouple = adafruit_max31856.MAX31856(spi, cs)
+
+# ADS1115 library (analog to digital converter) for Current Sensor
+# import adafruit_ads1x15.ads1015 as ADS
+import adafruit_ads1x15.ads1115 as ADS
+from adafruit_ads1x15.analog_in import AnalogIn
+
+# create a i2c object
+i2c = busio.I2C(board.SCL, board.SDA)
+
+
+
 dutyCycleLength = 1.0
 
 def get_temperature(isCelsius):
+
+    # print the temperature!
+    print(thermocouple.temperature)
+
     temperature = 0
     if isCelsius:
         print("temp celsius")
@@ -17,6 +49,14 @@ def get_temperature(isCelsius):
 
 def get_current():
     current = 0
+
+    # ads = ADS.ADS1015(i2c)
+    ads = ADS.ADS1115(i2c)
+    # ads.gain = 16
+
+    chan = AnalogIn(ads, ADS.P0)
+    print(chan.value, chan.voltage)
+
     return current
 
 def self_check():

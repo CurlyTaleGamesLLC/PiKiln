@@ -8,7 +8,7 @@ import time
 import threading
 import random
 
-import sensors
+# import sensors
 
 
 fireSchedule = json.dumps('{"placeholder":true}')
