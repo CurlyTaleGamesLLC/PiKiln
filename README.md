@@ -131,6 +131,8 @@ Look for the line starts “xserver-command” under “[Seat:*]” section and 
 * Delayed Start
 * Temperature Email Notification - triggered via firing schedule
 * GPIO output for venting with a fan - triggered via firing schedule
+* Javascript On Screen Keyboard for Raspberry Pi Touchscreen
+* Screen Saver
 
 # External Libraries #
 This project makes use of the following libraries: 
@@ -154,3 +156,4 @@ https://github.com/jbruce12000/kiln-controller
 Which began as a fork of Apollo-ng's picoReflow 
 
 https://github.com/apollo-ng/picoReflow
+

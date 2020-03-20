@@ -1,0 +1,13 @@
+# These settings are for rotating the 7" Raspberry Pi touch screen display
+
+# rotate the display 90 degrees
+sudo nano /boot/config.txt
+
+# add this line to the bottom:
+display_rotate=1
+
+# create a file that runs commands on start up
+nano .xsessionrc
+
+# add this line to the file to rotate the touch input 90 degrees
+xinput --set-prop 'FT5406 memory based driver' 'Coordinate Transformation Matrix'  0 1 0 -1 0 1 0 0 1
