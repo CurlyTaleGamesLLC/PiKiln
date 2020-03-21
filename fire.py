@@ -8,7 +8,12 @@ import time
 import threading
 import random
 
-# import sensors
+# custom libraries for hardware
+import io_relay
+import io_temp
+import io_current
+
+import fire_logs
 
 
 fireSchedule = json.dumps('{"placeholder":true}')
@@ -33,8 +38,12 @@ fireTotalLength = 0
 fireStartTime = time.time()
 stop_threads = False
 
+error = False
+errorMessage = ""
+
 def get_current_temperature():
-	return random.randrange(50,100)
+	return io_temp.GetTemp()
+	# return random.randrange(50,100)
 
 def get_current_units():
 	return fireScheduleUnits
@@ -185,7 +194,7 @@ def schedule_loop():
 			if logTime  > 14:
 				logTime = 0
 				print("LOGGING " + str(fireCurrentTemp) + " " + str(targetTemp))
-				log_add_data(fireCurrentTemp, targetTemp)
+				fire_logs.AddData(fireCurrentTemp, targetTemp)
 				# add amp sensor reading to log
 
 			# Check if segment phase has completed
@@ -252,7 +261,8 @@ def start_fire():
 		load_schedule()
 
 		# Sets up log file for current schedule
-		log_data(fireSchedule['name'], fireSchedule['units'], tzone, fireTotalLength)
+		fire_logs.StartLog(fireSchedule['name'], fireSchedule['units'], tzone, fireTotalLength)
+		# log_data(fireSchedule['name'], fireSchedule['units'], tzone, fireTotalLength)
 	
 		# Start a Thread to allow firing sequence to run in the background
 		stop_threads = False
@@ -308,42 +318,37 @@ def stop_fire():
 # 		#add trailing newline for POSIX compatibility
 # 		f.write('\n')
 
-def log_data(logName, logUnits, logTimezone, logTotalTime):
+def Error(message):
+	global error
+	global errorMessage
+	io_relay.AllOff()
+	error = True
+	errorMessage = message
+	print(message)
+	
+dutyCycleLength = 2.0
 
-	print ("SET UP LOG FILE")
-	logDataJSON = {}
-	logDataJSON['name'] = logName
-	logDataJSON['error'] = ""
-	logDataJSON['units'] = logUnits
-	logDataJSON['timezone'] = logTimezone
-	logDataJSON['total-time'] = logTimezone
-	logDataJSON['temp-log'] = []
-	logDataJSON['schedule-log'] = []
+def duty_cycle(relayNumber, percent):
+	# min of 100 ms
+	print("LOW")
+	io_relay.AllOff()
+	dutyCycleLowLength = (dutyCycleLength * (1.0 - percent)) / 2.0
+	time.sleep(dutyCycleLowLength)
 
-	# current date and time
-	nowTime = datetime.now(tz=pytz.timezone(logTimezone))
-	timestamp = nowTime.strftime("%Y-%m-%d %H:%M:%S")
-	print (timestamp)
+	if io_current.IsConnected():
+		Error("Bad Current Sensor or two bad relays, unplug now!")
+	time.sleep(dutyCycleLowLength)
+	
+	print("HIGH")
+	io_relay.AllOn()
+	dutyCycleHighLength = (dutyCycleLength * percent) / 2.0
+	time.sleep(dutyCycleHighLength)
+	
+	if not io_current.IsConnected():
+		Error("Bad Current Sensor, or bad relay")
+	time.sleep(dutyCycleHighLength)
 
-	logDataJSON['start-time'] = timestamp
 
-	with open('log.json', 'w') as f:
-		json.dump(logDataJSON, f, indent=4, separators=(',', ':'), sort_keys=True)
-		#add trailing newline for POSIX compatibility
-		f.write('\n')
-
-# reads log.json and adds new temp to temp-log
-def log_add_data(newTemp, scheduledTemp):
-
-	with open ('log.json', "r") as fileData:
-		jsonFileData = json.load(fileData)
-		jsonFileData['temp-log'].append(newTemp)
-		jsonFileData['schedule-log'].append(scheduledTemp)
-
-	with open('log.json', 'w') as f:
-		json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
-		#add trailing newline for POSIX compatibility
-		f.write('\n')
 
 # COST ESTIMATION
 # Find the cooldown rate from normal firing

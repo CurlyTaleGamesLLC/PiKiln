@@ -13,5 +13,12 @@ def SetState(index, isOn):
     else:
         GPIO.output(relays[index], GPIO.LOW)
 
+def AllOff():
+    for relay in relays:
+        GPIO.output(relay, GPIO.LOW)
+
+def AllOn():
+    for relay in relays:
+        GPIO.output(relay, GPIO.HIGH)
 
 # GPIO.cleanup()

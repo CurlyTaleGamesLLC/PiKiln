@@ -37,7 +37,7 @@
 
     {% include 'footer.html' %}
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% include 'footer-scripts.html' %}
     <script>
         $(document).ready(function() {
             console.log( "document loaded" );
