@@ -85,153 +85,40 @@ def api_temp():
 @app.route('/api/duplicate-schedule', methods=['POST'])
 def duplicate_schedule():
 	# # import file and create a unique filename
-	
 	filename = request.form.get('schedulePath')
-	# src_file = os.path.join('schedules', filename)
-	# print(src_file)
-	# unique_filename = str(uuid.uuid4()) + ".json"
-	# dst_file = os.path.join('schedules', unique_filename)
-	# print(dst_file)
-	
-	# # update path in imported schedule to be new filename
-	# with open (src_file, "r") as fileData:
-	# 	jsonFileData = json.load(fileData)
-	# 	jsonFileData['path'] = unique_filename
-	# 	newName = jsonFileData['name'] + ' (new)'
-	# 	jsonFileData['name'] = newName
-
-	# with open(dst_file, 'w') as f:
-	# 	json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
-	# 	#add trailing newline for POSIX compatibility
-	# 	f.write('\n')
 	return schedules.duplicate_schedule(filename)
 
 @app.route('/api/delete-schedule', methods=['DELETE'])
 def delete_schedule():
 	filename = request.args.get('schedulePath')
-	# print("deleting schedule " + filename)
-	# fullPath = os.path.join('schedules', filename)
-	# os.remove(fullPath)
 	return schedules.delete_schedule(filename)
 
 
 @app.route('/api/import-schedule', methods=['POST'])
 def import_schedule():
-	# import file and create a unique filename
-	# unique_filename = str(uuid.uuid4())
 	try:
 		file = request.files['imported-schedule']
 	except:
 		file = None
-
-	# # check if valid file
-	# if file and file.filename.endswith('.json'):
-	# 	filename = unique_filename + '.json'
-	# 	fullPath = os.path.join('schedules', filename)
-	# 	print("saving " + fullPath)
-	# 	file.save(fullPath)
-	# 	file_uploaded = True
-	# else:
-	# 	filename = None
-	# 	file_uploaded = False
-
-	# # update path in imported schedule to be new filename
-	# if file_uploaded:
-	# 	with open (fullPath, "r") as fileData:
-	# 			jsonFileData = json.load(fileData)
-	# 			jsonFileData['path'] = filename
-
-	# 	with open(fullPath, 'w') as f:
-	# 		json.dump(jsonFileData, f, indent=4, separators=(',', ':'), sort_keys=True)
-	# 		#add trailing newline for POSIX compatibility
-	# 		f.write('\n')
-
-	# # return some json to reload the page
-	# jsonResult = str(file_uploaded).lower()
 	return schedules.import_schedule(file)
 
 @app.route('/api/create-schedule', methods=['POST'])
 def create_schedule():
-	
 	get_units()
-
-	# unique_filename = str(uuid.uuid4())
-	# print("new schedule " + unique_filename)
-
-	# newData = {}
-	# newData['name'] = 'Untitled Schedule'
-	# newData['units'] = units
-	# newData['segments'] = []
-	# newData['segments'].append({'rate':50, 'temp':500,'hold':30})
-	# newData['segments'].append({'rate':100, 'temp':800,'hold':60})
-
-	# with open('schedules/' + unique_filename + '.json', 'w') as f:
-	# 	json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
-	# 	#add trailing newline for POSIX compatibility
-	# 	f.write('\n')
-	# fullFileName = unique_filename + ".json"
 	return schedules.create_schedule(units)
 
 @app.route('/api/list-schedules')
 def list_schedules():
-	# print("getting list of schedules")
-	# newData = {}
-	# newData['schedules'] = []
-
-	# for filename in os.listdir('schedules'):
-	# 	if filename.endswith(".json"):
-	# 		fullPath = os.path.join('schedules', filename)
-	# 		print("reading " + fullPath)
-	# 		with open (fullPath, "r") as fileData:
-	# 			print(filename)
-	# 			jsonFileData = json.load(fileData) 
-	# 			newData['schedules'].append({'path':filename, 'name':jsonFileData['name']})
-
-	# print('sorting')
-	# newData['schedules'] = sorted(newData['schedules'], key = lambda i: i['name']) 
 	return schedules.list_schedules()
 
 @app.route('/api/get-schedule')
 def get_schedule():
-	# print(request)
 	filename = request.args.get('schedulePath')
-	# print("getting schedule " + filename)
-
-	# fullPath = os.path.join('schedules', filename)
-	
-	# with open (fullPath, "r") as fileData:
-	# 		jsonFileData = json.load(fileData)
-
-	# 		for index, segment in enumerate(jsonFileData['segments']):
-	# 			print(index, segment)
-	# 			jsonFileData['segments'][index]['rate'] = segment['rate']
-	# 			jsonFileData['segments'][index]['temp'] = segment['temp']
-	# 			print(index, segment)
-		
-	# 		return jsonify(jsonFileData)
-
 	return schedules.get_schedule(filename)
 
 @app.route('/api/save-schedule', methods=['POST'])
 def save_schedule():
 	scheduleJSON = request.json
-	# fullPath = os.path.join('schedules', request.json['path'])
-
-	# with open(fullPath, 'w') as f:
-
-	# 	# Convert to degrees C/F
-	# 	for segment in testJson['segments']:
-	# 		# print("RATE")
-	# 		# print(segment['rate'])
-	# 		segment['rate'] = segment['rate']
-	# 		# print("TEMP")
-	# 		# print(segment['temp'])
-	# 		segment['temp'] = segment['temp']
-
-	# 	json.dump(testJson, f, indent=4, separators=(',', ':'), sort_keys=True)
-	# 	#add trailing newline for POSIX compatibility
-	# 	f.write('\n')
-
 	return schedules.save_schedule(scheduleJSON)
 
 
@@ -317,7 +204,7 @@ def render_home():
 	return render_template('index.html')
 
 @app.route('/index')
-def render_home2():
+def render_home_index():
 	return render_template('index.html')
 
 @app.route('/firing-schedules')
