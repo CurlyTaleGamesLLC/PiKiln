@@ -6,19 +6,14 @@ import shutil
 import uuid
 import os
 import fire
+import fire_logs
 import schedules
+import settings
 
 units = True
 
 def str2bool(v):
 	return v.lower() in ("yes", "true", "t", "1")
-
-def is_json_key_present(json, key):
-	try:
-		buf = json[key]
-	except KeyError:
-		return False
-	return True
 
 def float_default(n,d):
     try:
@@ -33,6 +28,8 @@ def int_default(n,d):
         return d
 
 app = Flask(__name__)
+
+# FIRING ROUTES
 
 @app.route('/api/start-fire')
 def api_start_fire():
@@ -82,6 +79,8 @@ def api_temp():
 	currentUnits = fire.get_current_units()
 	return jsonify(temp=currentTemp,units=currentUnits)
 
+# SCHEDULE ROUTES
+
 @app.route('/api/duplicate-schedule', methods=['POST'])
 def duplicate_schedule():
 	# # import file and create a unique filename
@@ -104,7 +103,7 @@ def import_schedule():
 
 @app.route('/api/create-schedule', methods=['POST'])
 def create_schedule():
-	get_units()
+	units = settings.get_units()
 	return schedules.create_schedule(units)
 
 @app.route('/api/list-schedules')
@@ -122,13 +121,15 @@ def save_schedule():
 	return schedules.save_schedule(scheduleJSON)
 
 
+
 @app.route('/api/load-settings')
-def api_load_settings():
-	print("getting settings")
-	with open ("settings.json", "r") as getSettings:
-		settingsData = json.load(getSettings)
-		print(settingsData)
-		return jsonify(settingsData)
+def load_settings():
+	# print("getting settings")
+	# with open ("settings.json", "r") as getSettings:
+	# 	settingsData = json.load(getSettings)
+	# 	print(settingsData)
+	# 	return jsonify(settingsData)
+	return settings.load_settings()
 
 @app.route('/api/load-status')
 def api_load_status():
@@ -137,10 +138,18 @@ def api_load_status():
 		return jsonify(statusData)
 
 @app.route('/api/load-totals')
-def api_load_totals():
-	with open ("totals.json", "r") as getTotals:
-		totalsData = json.load(getTotals)
-		return jsonify(totalsData)
+def load_totals():
+	# with open ("totals.json", "r") as getTotals:
+	# 	totalsData = json.load(getTotals)
+	# 	return jsonify(totalsData)
+	return fire_logs.load_totals()
+
+@app.route('/api/get-chart')
+def api_get_chart():
+	# with open ("log.json", "r") as getStatus:
+	# 	statusData = json.load(getStatus)
+	# 	return jsonify(statusData)
+	return fire_logs.get_chart()
 
 # This is kind of hacky and needs some cleanup
 @app.route('/api/update-settings', methods=['POST'])
@@ -148,55 +157,51 @@ def update_settings():
 	global units
 	rawData = request.form
 
-	print(rawData)
+	# print(rawData)
 	
-	# reformat data from form
-	newData = {}
-	newData['notifications'] = {}
-	newData['notifications']['timezone'] = rawData['timezone']
-	newData['notifications']['sender'] = rawData['sender']
-	newData['notifications']['sender-password'] = rawData['sender-password']
-	newData['notifications']['receiver'] = rawData['receiver']
-	# form has to send checked value of on in order for enable-email to have any value
-	newData['notifications']['enable-email'] = is_json_key_present(rawData, 'enable-email')
-	newData['cost'] = float(rawData['cost'])
-	newData['volts'] = float(rawData['volts'])
+	# # reformat data from form
+	# newData = {}
+	# newData['notifications'] = {}
+	# newData['notifications']['timezone'] = rawData['timezone']
+	# newData['notifications']['sender'] = rawData['sender']
+	# newData['notifications']['sender-password'] = rawData['sender-password']
+	# newData['notifications']['receiver'] = rawData['receiver']
+	# # form has to send checked value of on in order for enable-email to have any value
+	# newData['notifications']['enable-email'] = is_json_key_present(rawData, 'enable-email')
+	# newData['cost'] = float(rawData['cost'])
+	# newData['volts'] = float(rawData['volts'])
 
-	# convert max temp if units were changed
-	isFahrenheit = is_json_key_present(rawData, 'units')
-	newData['units'] = "fahrenheit" if isFahrenheit else "celsius"
+	# # convert max temp if units were changed
+	# isFahrenheit = is_json_key_present(rawData, 'units')
+	# newData['units'] = "fahrenheit" if isFahrenheit else "celsius"
 
-	newData['max-temp'] = float(rawData['max-temp'])
-	if units != newData['units']:
-		if units == "celsius":
-			newData['max-temp'] = float(rawData['max-temp']) * 9 / 5 + 32
-		else:
-			newData['max-temp'] = (float(rawData['max-temp']) -32) * 5 / 9
+	# newData['max-temp'] = float(rawData['max-temp'])
+	# if units != newData['units']:
+	# 	if units == "celsius":
+	# 		newData['max-temp'] = float(rawData['max-temp']) * 9 / 5 + 32
+	# 	else:
+	# 		newData['max-temp'] = (float(rawData['max-temp']) -32) * 5 / 9
 
-	newData['offset-temp'] = float_default(float(rawData['offset-temp']), 0.0)
+	# newData['offset-temp'] = float_default(float(rawData['offset-temp']), 0.0)
 
-	units = newData['units']
+	# units = newData['units']
 		
-	# write new settings to json file
-	with open('settings.json', 'w') as f:
-		json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
-		#add trailing newline for POSIX compatibility
-		f.write('\n')
-	return jsonify(result=True)
+	# # write new settings to json file
+	# with open('settings.json', 'w') as f:
+	# 	json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
+	# 	#add trailing newline for POSIX compatibility
+	# 	f.write('\n')
+	return settings.update_settings(rawData)
 
-@app.route('/api/get-chart')
-def api_get_chart():
-	with open ("log.json", "r") as getStatus:
-		statusData = json.load(getStatus)
-		return jsonify(statusData)
+
 
 
 # gets most up to date temperature units in settings
-def get_units():
-	global units
-	with open('settings.json') as settings_file:
-		data = json.load(settings_file)
-		units = data['units']
+# def get_units():
+# 	global units
+# 	with open('settings.json') as settings_file:
+# 		data = json.load(settings_file)
+# 		units = data['units']
 
 # render html templates
 @app.route('/')

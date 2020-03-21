@@ -47,6 +47,16 @@ def AddData(newTemp, scheduledTemp):
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
+def get_chart():
+	with open ("log.json", "r") as getStatus:
+		statusData = json.load(getStatus)
+		return jsonify(statusData)
+
+def load_totals():
+	with open ("totals.json", "r") as getTotals:
+		totalsData = json.load(getTotals)
+		return jsonify(totalsData)
+
 # COST ESTIMATION
 # Find the cooldown rate from normal firing
 # When the element is on measure the heating rate
