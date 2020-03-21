@@ -1,3 +1,4 @@
+//loads data for logging page
 function GetTotals(){
   $.getJSON("api/load-totals", function (result) {
     console.log(result);

@@ -1,16 +1,14 @@
-
-
-//Start Firing Schedule
-// $('#btn-start-schedule').click(function () {
-//   $.getJSON("api/start-fire?schedulePath=" + loadedSchedule['path'], function (result) {
-//     console.log(result);
-//     $('#btn-start-schedule-modal').addClass('d-none');
-//     $('#btn-stop-schedule-modal').removeClass('d-none');
-//     $('#home-time-group').removeClass('d-none');
-//     $('#home-schedule-list').addClass('d-none');
-//     $('#home-estimates').addClass('d-none');
-//   });
-// });
+//Start Firing Schedule - inside pikiln-scripts.js
+$('#btn-start-schedule').click(function () {
+  $.getJSON("api/start-fire?schedulePath=" + loadedSchedule['path'], function (result) {
+    console.log(result);
+    $('#btn-start-schedule-modal').addClass('d-none');
+    $('#btn-stop-schedule-modal').removeClass('d-none');
+    $('#home-time-group').removeClass('d-none');
+    $('#home-schedule-list').addClass('d-none');
+    $('#home-estimates').addClass('d-none');
+  });
+});
 
 //Stop Firing Schedule
 $('#btn-stop-schedule').click(function () {

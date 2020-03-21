@@ -1,3 +1,4 @@
+//loads data for settings page
 function LoadSettings() {
   $.getJSON("api/load-settings", function (result) {
     console.log(result);
@@ -23,6 +24,7 @@ function LoadSettings() {
 }
 
 
+//submits form and saves settings data
 $('#btn-save-settings').click(function () {
   $.post('./api/update-settings', $('form#form-settings').serialize(), function (data) {
     console.log("POSTED");
@@ -40,7 +42,7 @@ $('#btn-save-settings').click(function () {
 });
 
 
-
+//i don't think this is being used
 var currentUnits;
 function GetSettings() {
   $.getJSON("api/load-settings", function (result) {

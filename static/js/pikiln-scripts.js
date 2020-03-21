@@ -1,19 +1,7 @@
-//var editSchedule;
 var loadedSchedule;
+var loadedUnits;
 
-//Start Firing Schedule
-$('#btn-start-schedule').click(function () {
-  $.getJSON("api/start-fire?schedulePath=" + loadedSchedule['path'], function (result) {
-    console.log(result);
-    $('#btn-start-schedule-modal').addClass('d-none');
-    $('#btn-stop-schedule-modal').removeClass('d-none');
-    $('#home-time-group').removeClass('d-none');
-    $('#home-schedule-list').addClass('d-none');
-    $('#home-estimates').addClass('d-none');
-  });
-});
-
-
+//loads drop down of options for firing schedules for both home page and edit firing schedules page
 function LoadSchedules() {
   $.getJSON("api/list-schedules", function (result) {
     console.log(result);
@@ -23,7 +11,7 @@ function LoadSchedules() {
       var optionValue = result['schedules'][i]['path'];
       var optionName = result['schedules'][i]['name'];
       var optionData = '<option value="' + optionValue + '">' + optionName + '</option>'
-      console.log(optionName + " " + optionValue);
+      //console.log(optionName + " " + optionValue);
       dropdownHTML += optionData;
     }
 
@@ -31,14 +19,12 @@ function LoadSchedules() {
   });
 }
 
-
-var loadedUnits;
+//loads selected firing schedule for both home page and edit firing schedules page
 $('select[name="fireScheduleList"]').change(function () {
   if ($(this).val() != "select-schedule") {
     console.log("Load " + $(this).val());
     editSchedule = $(this).val();
 
-    //$("#fireScheduleList option[value='select-schedule']").remove();
     $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
       console.log(result);
       console.log("schedule units = " + result['units']);
@@ -65,15 +51,12 @@ $('select[name="fireScheduleList"]').change(function () {
 
       //Estimate Time
       UpdateEstimateTime();
-      
-
     });
-
-    
-
   }
 });
 
+
+//constantly re-calculates the estimated firing time on the edit firing schedule page
 function UpdateEstimateTime(){
   console.log("update time estimate");
   if(loadedSchedule == null){
@@ -87,7 +70,6 @@ function UpdateEstimateTime(){
   var totalLength = 0;
 
   //assume room temperature
-  //editSchedule
   var startTemp = loadedUnits == "fahrenheit" ? 72 : 22.222;
   startTemp = 0;
 
@@ -107,6 +89,7 @@ function UpdateEstimateTime(){
   return totalLength
 }
 
+//create html for a row in a firing schedule
 function LoadSegment(rate, temp, hold, isEdit) {
   var html = '<tr class="segment-row"><td></td><td class="numbersOnly" contenteditable="' + isEdit + '">';
   html += rate;
@@ -193,10 +176,10 @@ function GetStatus() {
   });
 }
 
+//highlight current page
 function HighlightNav(){
-  //highlight current page
   $('.nav-item').each(function () {
-    console.log($(this).attr('href'));
+    //console.log($(this).attr('href'));
     if ("/" + $(this).attr('href') == window.location.pathname) {
       $(this).addClass("active");
     }
@@ -206,17 +189,16 @@ function HighlightNav(){
   });
 }
 
+//only allow numbers to be entered into field with numbersOnly class
 function NumbersOnly(){
   $('.numbersOnly').each(function () {
 
     var numberText = $(this).text();
-
     var regex = new RegExp(/[^0-9\.]/g); // expression here
     var isNumber = false;
 
     $(this).filter(function () {
       isNumber = regex.test(numberText);
-      //console.log("TEST " + $(this).text() + " " + text);
       return isNumber;
     });
 
@@ -231,7 +213,7 @@ function NumbersOnly(){
   });
 }
 
-//deselect input fields
+//deselect input fields when enter is pressed
 $(document).on('keypress',function(e) {
   if(e.which == 13) {
       $(':focus').blur()
@@ -254,7 +236,7 @@ $(document).ready(function () {
 });
 
 
-
+//converts fahrenheit to celsius
 function f2c(value){
   return (value - 32) * 5 / 9;
 }
