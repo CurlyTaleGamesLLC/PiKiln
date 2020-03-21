@@ -8,15 +8,15 @@ cs = digitalio.DigitalInOut(board.D6)
 
 max31856 = adafruit_max31856.MAX31856(spi, cs)
 
-isCelcius = False
-offset = 0
+# isCelcius = False
+# offset = 0
 
-def GetTemp():
-	tempC = max31856.temperature + offset
+def GetTemp(units, offset):
+	tempC = max31856.temperature
 	tempF = tempC * 9 / 5 + 32
-	if isCelcius:
-		return tempC
+	if units == "celsius":
+		return tempC + offset
 	else:
-		return tempF
+		return tempF + offset
 
-# print(str(GetTemp()))
+# print(str(GetTemp("celsius", 0)))

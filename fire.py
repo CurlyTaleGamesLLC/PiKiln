@@ -42,7 +42,7 @@ error = False
 errorMessage = ""
 
 def get_current_temperature():
-	return io_temp.GetTemp()
+	return io_temp.GetTemp("celsius", 0)
 	# return random.randrange(50,100)
 
 def get_current_units():

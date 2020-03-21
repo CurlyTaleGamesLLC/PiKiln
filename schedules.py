@@ -4,7 +4,6 @@ import uuid
 import os
 
 def create_schedule(units):
-	# get_units()
 	unique_filename = str(uuid.uuid4())
 	print("new schedule " + unique_filename)
 
@@ -24,8 +23,6 @@ def create_schedule(units):
 
 def duplicate_schedule(filename):
 	# import file and create a unique filename
-	
-	# filename = request.form.get('schedulePath')
 	src_file = os.path.join('schedules', filename)
 	print(src_file)
 	unique_filename = str(uuid.uuid4()) + ".json"
@@ -55,10 +52,6 @@ def delete_schedule(filename):
 def import_schedule(file):
 	# import file and create a unique filename
 	unique_filename = str(uuid.uuid4())
-	# try:
-	# 	file = request.files['imported-schedule']
-	# except:
-	# 	file = None
 
 	# check if valid file
 	if file and file.filename.endswith('.json'):
