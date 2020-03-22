@@ -1,3 +1,4 @@
 schedules/*.json
 ref/*
 *.pyc
+scratch.py

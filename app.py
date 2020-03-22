@@ -17,23 +17,13 @@ app = Flask(__name__)
 
 @app.route('/api/start-fire')
 def start_fire():
-	# fire.hello()
-
-	# # Copy selected schedule to active
-	# print(request)
 	filename = request.args.get('schedulePath')
-	# print("getting schedule " + filename)
-
-	# src_file = os.path.join('schedules', filename)
-	# shutil.copyfile(src_file, "active.json")
-
-	# fire.start_fire()
-	return fire_active.StartFire(filename)
+	return fire.StartFire(filename)
 
 @app.route('/api/stop-fire')
 def stop_fire():
 	# fire.hello_stop()
-	fire.stop_fire()
+	fire.StopFire()
 	return jsonify(result=False)
 
 @app.route('/api/get-total-time')

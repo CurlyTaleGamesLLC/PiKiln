@@ -23,12 +23,19 @@ Open terminal and run this command:
 
 Enter that IP address in your web browser on your phone or computer to access your PiKiln
 
+# Screenshots #
+
+![Home page of PiKiln, select a firing schedule to begin firing](/docs/images/01_home.png)
+![Edit page of PiKiln, create, duplicate, import, export and delete firing schedules](/docs/images/02_edit.png)
+![Logging page of PiKiln, view how past fires have gone as well as kiln statistics](/docs/images/03_logs.png)
+![Settings page of PiKiln, set your preferred temperature, set up email notification, as well as other settings](/docs/images/04_settings.png)
+
 # Manual Installation #
 
 ## Requirements ##
 
 * Software
-	* python 3.3+
+	* Python 3.3+
 	* pip
 	* Flask
 	* git
@@ -60,9 +67,10 @@ Connect your Raspberry Pi to your Wifi network
 
 Open Terminal and run these commands to update your Raspberry Pi:
 
-`sudo apt-get update
-
-sudo apt-get upgrade -y`
+```
+sudo apt-get update 
+sudo apt-get upgrade -y
+```
 
 Reboot your Raspberry Pi
 
@@ -95,13 +103,12 @@ Get rid of black overscan edges
 
 Install PIP, Flask, and Git
 
-`sudo apt-get install python-pip -y
-
+```
+sudo apt-get install python-pip -y
 sudo pip install flask -y
-
 sudo pip install pytz
-
-sudo apt-get install git -y`
+sudo apt-get install git -y
+```
 
 Download latest release of PiKiln
 

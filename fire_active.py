@@ -6,11 +6,19 @@ import shutil
 import fire
 
 import io_temp
+import settings
 
 active = {}
 phases = {}
 
+duration = 0
+currentSegment = 0
+
 # startTemp = 0
+
+def GetCurrentTemp():
+	global phases
+	return io_temp.GetTemp(phases['units'])
 
 # Convert the ramp, temp, hold schedules to phase segments
 
@@ -29,14 +37,15 @@ def ConvertToSegments():
 	global phases
 	global active
 	# global startTemp
-
+	global duration
 	
 	phases.clear()
+	phases['name'] = active['name']
 	phases['units'] = active['units']
 	phases['segments'] = []
 
 	# startTemp = 0
-	startTemp = io_temp.GetTemp(phases['units'], 0)
+	startTemp = GetCurrentTemp()
 
 	duration = 0.0
 
@@ -79,6 +88,7 @@ def ConvertToSegments():
 
 def GetTargetTemp(timeHours):
 	global phases
+	global currentSegment
 
 	if timeHours > phases['segments'][len(phases['segments']) - 1]['finished']:
 		print("FINISHED")
@@ -106,7 +116,10 @@ def GetTargetTemp(timeHours):
 	diff = phases['segments'][segmentIndex]['end'] - phases['segments'][segmentIndex]['start']
 	temp = phases['segments'][segmentIndex]['start'] + (diff * percent)
 
+	currentSegment = segmentIndex // 2
+
 	return temp
+
 
 
 def StartFire(filename):
@@ -123,12 +136,12 @@ def StartFire(filename):
 		print(active)
 
 	ConvertToSegments()
-	print(GetTargetTemp(0.0))
-	print(GetTargetTemp(2.0))
-	print(GetTargetTemp(6.0))
-	print(GetTargetTemp(8.0))
-	print(GetTargetTemp(10.0))
-	print(GetTargetTemp(12.0))
+	# print(GetTargetTemp(0.0))
+	# print(GetTargetTemp(2.0))
+	# print(GetTargetTemp(6.0))
+	# print(GetTargetTemp(8.0))
+	# print(GetTargetTemp(10.0))
+	# print(GetTargetTemp(12.0))
 
 	# fire.start_fire()
 	return jsonify(result=True)
