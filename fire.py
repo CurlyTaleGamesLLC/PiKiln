@@ -14,6 +14,7 @@ import io_temp
 import io_current
 
 import fire_logs
+import fire_active
 
 
 fireSchedule = json.dumps('{"placeholder":true}')
@@ -211,24 +212,7 @@ def schedule_loop():
 
 		time.sleep(1)
 
-def load_schedule():
-	global fireSchedule
-	global fireScheduleLoaded
 
-	if not fireScheduleLoaded:
-		fireScheduleLoaded = True
-		print("READING ACTIVE.JSON")
-		with open ('active.json', "r") as fileData:
-				fireSchedule = json.load(fileData)
-				print(fireSchedule)
-				
-				# update_status_data(
-				# 	fireSchedule['name'],
-				# 	"firing",
-				# 	"",
-				# 	fireSchedule['units'],
-				# 	tzone
-				# 	)
 
 
 def start_fire():
@@ -258,7 +242,7 @@ def start_fire():
 		offset = float(data['offset-temp'])
 
 		fireScheduleLoaded = False
-		load_schedule()
+		# load_schedule()
 
 		# Sets up log file for current schedule
 		fire_logs.StartLog(fireSchedule['name'], fireSchedule['units'], tzone, fireTotalLength)

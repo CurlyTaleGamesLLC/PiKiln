@@ -2,11 +2,11 @@
 
 from flask import Flask, render_template, request, jsonify
 import json
-import shutil
 import uuid
 import os
 import fire
 import fire_logs
+import fire_active
 import schedules
 import settings
 
@@ -19,16 +19,16 @@ app = Flask(__name__)
 def start_fire():
 	# fire.hello()
 
-	# Copy selected schedule to active
-	print(request)
+	# # Copy selected schedule to active
+	# print(request)
 	filename = request.args.get('schedulePath')
-	print("getting schedule " + filename)
+	# print("getting schedule " + filename)
 
-	src_file = os.path.join('schedules', filename)
-	shutil.copyfile(src_file, "active.json")
+	# src_file = os.path.join('schedules', filename)
+	# shutil.copyfile(src_file, "active.json")
 
-	fire.start_fire()
-	return jsonify(result=True)
+	# fire.start_fire()
+	return fire_active.StartFire(filename)
 
 @app.route('/api/stop-fire')
 def stop_fire():
