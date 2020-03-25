@@ -20,6 +20,11 @@ def GetCurrentTemp():
 	global phases
 	return io_temp.GetTemp(phases['units'])
 
+def GetEstimateTemp(units):
+	global phases
+	return io_temp.GetTemp(units)
+
+
 # Convert the ramp, temp, hold schedules to phase segments
 
 # |SEGMENT |SEGMENT |SEGMENT            
@@ -86,6 +91,40 @@ def ConvertToSegments():
 	print(phases)
 
 
+# used to show estimates of selected schedules before firing them
+def GetTimeEstimate(filename):
+	print("getting schedule " + filename)
+	src_file = os.path.join('schedules', filename)
+
+	with open (src_file, "r") as scheduleData:
+		estimateSchedule = json.load(scheduleData)
+		print(estimateSchedule)
+
+	startEstimateTemp = GetEstimateTemp(estimateSchedule['units'])
+	estimateDuration = 0.0
+
+	for i in range(len(estimateSchedule['segments'])):
+
+		rampStartTemp = 0
+		# set the start temperature of the first segment the actual 
+		# temperature of the kiln or the target temperature, whichever is lower
+		if i == 0:
+			rampStartTemp = min([estimateSchedule['segments'][i]['temp'], startEstimateTemp])
+		else:
+			rampStartTemp = estimateSchedule['segments'][i - 1]['temp']
+
+		segmentStart = rampStartTemp
+		segmentEnd = estimateSchedule['segments'][i]['temp']
+		rampDuration = abs(segmentEnd - segmentStart) / estimateSchedule['segments'][i]['rate']
+		estimateDuration += rampDuration
+
+		# convert mins to hours
+		estimateDuration += estimateSchedule['segments'][i]['hold'] / 60.0
+	
+	return estimateDuration
+
+
+
 def GetTargetTemp(timeHours):
 	global phases
 	global currentSegment
@@ -121,7 +160,6 @@ def GetTargetTemp(timeHours):
 	return temp
 
 
-
 def StartFire(filename):
 	global active
 
@@ -136,14 +174,6 @@ def StartFire(filename):
 		print(active)
 
 	ConvertToSegments()
-	# print(GetTargetTemp(0.0))
-	# print(GetTargetTemp(2.0))
-	# print(GetTargetTemp(6.0))
-	# print(GetTargetTemp(8.0))
-	# print(GetTargetTemp(10.0))
-	# print(GetTargetTemp(12.0))
 
 	# fire.start_fire()
 	return jsonify(result=True)
-
-# StartFire("73956579-3efb-4eb2-96d8-557c7e63557a.json")

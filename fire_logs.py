@@ -9,8 +9,12 @@ import time
 import threading
 import random
 
+import settings
 
-def StartLog(logName, logUnits, logTimezone, logTotalTime):
+
+def StartLog(logName, logUnits):
+
+	logTimezone = settings.settings['notifications']['timezone']
 
 	print ("SET UP LOG FILE")
 	logDataJSON = {}
@@ -18,7 +22,7 @@ def StartLog(logName, logUnits, logTimezone, logTotalTime):
 	logDataJSON['error'] = ""
 	logDataJSON['units'] = logUnits
 	logDataJSON['timezone'] = logTimezone
-	logDataJSON['total-time'] = logTimezone
+	# logDataJSON['total-time'] = logTotalTime
 	logDataJSON['temp-log'] = []
 	logDataJSON['schedule-log'] = []
 

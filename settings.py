@@ -47,7 +47,7 @@ def update_settings(rawData):
 	isFahrenheit = is_json_key_present(rawData, 'units')
 	newData['units'] = "fahrenheit" if isFahrenheit else "celsius"
 
-	newData['max-temp'] = float(rawData['max-temp'])
+	newData['maxTemp'] = float(rawData['maxTemp'])
 	newData['offset-temp'] = float_default(float(rawData['offset-temp']), 0.0)
 		
 	# write new settings to json file
@@ -67,4 +67,5 @@ def load_settings():
 		settingsData = json.load(getSettings)
 		print(settingsData)
 		settings = settingsData
+		# return "Loaded Settings"
 		return jsonify(settingsData)

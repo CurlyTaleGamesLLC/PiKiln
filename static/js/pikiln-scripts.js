@@ -48,45 +48,31 @@ $('select[name="fireScheduleList"]').change(function () {
         $('#schedule-body').html($('#schedule-body').html() + newSegment);
       }
       $("#schedule-group").removeClass('d-none');
-
-      //Estimate Time
-      UpdateEstimateTime();
     });
+
+    //Estimate Time
+    UpdateEstimateTime($(this).val());
+
   }
 });
 
 
-//constantly re-calculates the estimated firing time on the edit firing schedule page
-function UpdateEstimateTime(){
-  console.log("update time estimate");
-  if(loadedSchedule == null){
-    return;
-  }
-  console.log("update time estimate2");
-  if(window.location.pathname == "/firing-schedules"){
-    loadedSchedule = ScheduleToJSON();
-  }
-  console.log(loadedSchedule);
-  var totalLength = 0;
+//TODO turn this into a python function to get the total time of the selected schedule
+function UpdateEstimateTime(schedulePath){
 
-  //assume room temperature
-  var startTemp = loadedUnits == "fahrenheit" ? 72 : 22.222;
-  startTemp = 0;
+  // if(editSchedule != undefined){
+  //   console.log("Edit Schedule = " + editSchedule);
+  //   schedulePath = editSchedule;
+  // }
 
-  for(var i = 0; i < loadedSchedule['segments'].length; i++){
-    var tempDifference = Math.abs(loadedSchedule['segments'][i]['temp'] - startTemp)
-    var rampTime = (tempDifference/loadedSchedule['segments'][i]['rate']) * 60;
-    //console.log("seg + " + rampTime);
-		totalLength += rampTime * 60;
-		//console.log("hold + " + loadedSchedule['segments'][i]['hold']);
-    totalLength += loadedSchedule['segments'][i]['hold'];
-    startTemp = loadedSchedule['segments'][i]['temp'];
-  }
-  //console.log("totalLength = " + totalLength);
-
-  $('#home-time').text(FormatTime(totalLength));
-  $('#home-time-summary').text(FormatTime(totalLength));
-  return totalLength
+    $.getJSON("api/get-time-estimate?schedulePath=" + schedulePath, function (result) {
+      console.log("estimate");
+      console.log(result);
+      totalLength = result['time'] * 3600;
+      console.log(totalLength);
+      $('#home-time').text(FormatTime(totalLength));
+      $('#home-time-summary').text(FormatTime(totalLength));
+    });
 }
 
 //create html for a row in a firing schedule
@@ -114,10 +100,13 @@ function GetStatus() {
       $.getJSON("api/get-current-schedule", function (result2) {
         $('.current-schedule').each(function () {$(this).text(" | " + result2['name'])});
       });
+      $('#time-cost-estimates').removeClass("d-none");
     }
     else{
       $('.current-schedule').each(function () {$(this).text("")});
     }
+
+    SetFiringButtons(result['status'] == "firing");
 
     if(result['status'] == "complete"){
       console.log("COMPLETE");
@@ -126,7 +115,11 @@ function GetStatus() {
       $('#home-complete').removeClass("d-none");
       $('#time-cost-estimates').addClass("d-none");
     }
-    else if(result['status'] == "error"){
+    else{
+      $('#home-complete').addClass("d-none");
+    }
+
+    if(result['status'] == "error"){
       console.log("ERROR");
       $('#home-error-title').text(" Faulty Relay #1");
       $('#home-error-message').text("The 1st relay is not properly turning off or on. Please turn off power and replace the faulty relay with a new one");
@@ -169,10 +162,9 @@ function GetStatus() {
 
   //update time remaining
   $.getJSON("api/get-total-time", function (result) {
-    console.log("time");
+    //console.log("time");
     console.log(result);
     UpdateTimer(result['currentTime'], result['totalTime']);
-    //UpdateTimer(result['totalTime']/2, result['totalTime']);
   });
 }
 
@@ -229,9 +221,9 @@ $(document).ready(function () {
   GetStatus();
   setInterval(function () { GetStatus() }, 5000);
   
-  if(window.location.pathname == "/firing-schedules"){
-    setInterval(function () {UpdateEstimateTime()}, 333);
-  }
+  // if(window.location.pathname == "/firing-schedules" && editSchedule != undefined){
+  //   setInterval(function () {UpdateEstimateTime()}, 333);
+  // }
   
 });
 

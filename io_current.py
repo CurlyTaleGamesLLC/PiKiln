@@ -21,7 +21,7 @@ gains = (2/3, 1, 2, 4, 8, 16)
 ads.gain = gains[1]
 
 referenceVoltage = 1.649
-threshold = 0.005
+threshold = 0.003
 
 def GetVoltage():
 	return abs(float(chan.voltage) - referenceVoltage)

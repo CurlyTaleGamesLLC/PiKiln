@@ -3,7 +3,7 @@ function LoadSettings() {
   $.getJSON("api/load-settings", function (result) {
     console.log(result);
     $('#cost').val(result['cost']);
-    $('#max-temp').val(result['max-temp']);
+    //$('#max-temp').val(result['max-temp']);
     $('#offset-temp').val(result['offset-temp']);
     $('#volts').val(result['volts']);
     $("#timezone").val(result['notifications']['timezone']);
@@ -54,3 +54,52 @@ function GetSettings() {
     currentUnits = result['units'];
   });
 }
+
+var app = new Vue({
+  el: '#app',
+  data: {
+      maxTemp: 2000
+      // name: "",
+      // age: 0,
+      // human: false,
+      // selected: "",
+      // options: [
+      //     { text: 'A', value: 'a' },
+      //     { text: 'B', value: 'b' },
+      //     { text: 'C', value: 'c' }
+      // ]
+  },
+  delimiters: ['[[', ']]'],
+  methods: {
+      loadData: function () {
+          var self = this;
+          axios.get("/api/load-settings").then(response => {
+              console.log(response);
+              self.maxTemp = response.data.maxTemp;
+              // self.name = response.data.name;
+              // self.age = response.data.age;
+              // self.human = response.data.human;
+          });
+      },
+
+      SubmitForm: function () {
+          var self = this;
+          axios.post('http://localhost:5000/test-post', {
+            maxTemp: self.maxTemp
+          })
+              .then(response => {
+                  console.log(response.data);
+              });
+      }
+
+      // this.http.get('/test').then(function(response){
+      //     data.list = response.data;
+      // }, function(error){
+      //     console.log(error.statusText);
+      // });
+  },
+  mounted: function () {
+      this.loadData();
+      //axios.get("http://localhost:5000/test").then(response => (console.log(response)))
+  }
+})

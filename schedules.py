@@ -137,4 +137,4 @@ def save_schedule(scheduleJSON):
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
-	return jsonify(result=True)
+	return jsonify(path=scheduleJSON['path'])

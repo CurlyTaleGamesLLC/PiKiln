@@ -54,8 +54,12 @@
           <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">1:00</span></li>
           <!-- <li class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">$3.50</span></li> -->
         </ul>
+
+        </div>
+      </div>
+      
         
-        <div id="home-time-group" class="row mb-3">
+        <div id="home-time-group" class="row mb-3 d-none">
           
           <h5 class="col-12"><i class="fas fa-hourglass-half"></i> Time Remaining: <span id="home-time-remaining">0:00</span></h5>
         
@@ -63,8 +67,6 @@
             <div id="home-time-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
           </div>
         
-        </div>
-        </div>
         </div>
 
         <div id="home-complete" class="row d-none">
@@ -87,7 +89,7 @@
       <div class="row mb-3">
         <div class="col-12 text-right">
             <button data-toggle="modal" data-target="#start-confirm-modal" id="btn-start-schedule-modal" class="btn mb-2 full-width-small btn-primary d-none"><i class="fas fa-burn"></i> Start Schedule</button>
-            <button data-toggle="modal" data-target="#stop-confirm-modal" id="btn-stop-schedule-modal" class="btn mb-2 full-width-small btn-danger"><i class="fas fa-ban"></i> Stop Schedule</button>
+            <button data-toggle="modal" data-target="#stop-confirm-modal" id="btn-stop-schedule-modal" class="btn mb-2 full-width-small btn-danger d-none"><i class="fas fa-ban"></i> Stop Schedule</button>
         </div>
       </div>
 

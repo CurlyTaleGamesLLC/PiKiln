@@ -18,11 +18,11 @@ app = Flask(__name__)
 @app.route('/api/start-fire')
 def start_fire():
 	filename = request.args.get('schedulePath')
-	return fire.StartFire(filename)
+	fire.StartFire(filename)
+	return jsonify(result=True)
 
 @app.route('/api/stop-fire')
 def stop_fire():
-	# fire.hello_stop()
 	fire.StopFire()
 	return jsonify(result=False)
 
@@ -30,6 +30,11 @@ def stop_fire():
 def get_total_time():
 	newTime = fire.get_total_time()
 	return jsonify(currentTime=newTime[0],totalTime=newTime[1])
+
+@app.route('/api/get-time-estimate')
+def GetTimeEstimate():
+	filename = request.args.get('schedulePath')
+	return jsonify(time=fire.GetTimeEstimate(filename))
 
 @app.route('/api/get-current-segment')
 def get_current_segment():
