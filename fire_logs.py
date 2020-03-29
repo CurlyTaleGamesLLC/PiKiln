@@ -14,20 +14,20 @@ import settings
 
 def StartLog(logName, logUnits):
 
-	logTimezone = settings.settings['notifications']['timezone']
+	# logTimezone = settings.settings['notifications']['timezone']
 
 	print ("SET UP LOG FILE")
 	logDataJSON = {}
 	logDataJSON['name'] = logName
 	logDataJSON['error'] = ""
 	logDataJSON['units'] = logUnits
-	logDataJSON['timezone'] = logTimezone
+	# logDataJSON['timezone'] = logTimezone
 	# logDataJSON['total-time'] = logTotalTime
 	logDataJSON['temp-log'] = []
 	logDataJSON['schedule-log'] = []
 
 	# current date and time
-	nowTime = datetime.now(tz=pytz.timezone(logTimezone))
+	nowTime = datetime.now()
 	timestamp = nowTime.strftime("%Y-%m-%d %H:%M:%S")
 	print (timestamp)
 

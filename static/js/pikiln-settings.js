@@ -1,105 +1,39 @@
-//loads data for settings page
-function LoadSettings() {
-  $.getJSON("api/load-settings", function (result) {
-    console.log(result);
-    $('#cost').val(result['cost']);
-    //$('#max-temp').val(result['max-temp']);
-    $('#offset-temp').val(result['offset-temp']);
-    $('#volts').val(result['volts']);
-    $("#timezone").val(result['notifications']['timezone']);
+// var app = new Vue({
+//   el: '#app',
+//   data: {
+//     settings:[]
+//   },
+//   delimiters: ['[[', ']]'],
+//   methods: {
+//       loadSettings: function () {
+//           var self = this;
+//           axios.get("/api/load-settings").then(response => {
+//               self.settings = response.data;
+//               console.log("settings:");
+//               console.log(self.settings);
+//           });
+//       },
 
-    var units = (result['units'] == "celsius")
-    console.log("units = " + units);
+//       saveSettings: function () {
+//           var self = this;
 
-    $('#units-setting').bootstrapToggle(units ? "off" : "on");
+//           //validate email
+//           var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,24}))$/
+//           self.settings.email = reg.test(self.settings.email) ? self.settings.email : "";
 
-    var enableEmail = result['notifications']['enable-email'];
-    $('#toggle-email').bootstrapToggle(enableEmail ? "on" : "off");
-    
+//           axios.post('/api/save-settings', self.settings)
+//               .then(response => {
+//                   console.log(response.data);
+//                   $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-3" role="alert" id="alert-save-settings"><strong>Settings Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
 
-    $('#sender').prop('value', result['notifications']['sender']);
-    $('#sender-password').prop('value', result['notifications']['sender-password']);
-    $('#receiver').prop('value', result['notifications']['receiver']);
-  });
-}
-
-
-//submits form and saves settings data
-$('#btn-save-settings').click(function () {
-  $.post('./api/update-settings', $('form#form-settings').serialize(), function (data) {
-    console.log("POSTED");
-    console.log(data);
-    //$('.alert').alert()
-    $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-3" role="alert" id="alert-save-settings"><strong>Settings Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
-
-    setTimeout(function () {
-      $('#alert-container').html('')
-    }, 4000);
-    
-  },
-    'json' // I expect a JSON response
-  );
-});
-
-
-//i don't think this is being used
-var currentUnits;
-function GetSettings() {
-  $.getJSON("api/load-settings", function (result) {
-    console.log(result);
-    //$('#cost').val(result['cost']);
-    //$('#max-temp').val(result['max-temp']);
-    var units = (result['units'] == "celsius")
-    console.log("units = " + units);
-    currentUnits = result['units'];
-  });
-}
-
-var app = new Vue({
-  el: '#app',
-  data: {
-      maxTemp: 2000
-      // name: "",
-      // age: 0,
-      // human: false,
-      // selected: "",
-      // options: [
-      //     { text: 'A', value: 'a' },
-      //     { text: 'B', value: 'b' },
-      //     { text: 'C', value: 'c' }
-      // ]
-  },
-  delimiters: ['[[', ']]'],
-  methods: {
-      loadData: function () {
-          var self = this;
-          axios.get("/api/load-settings").then(response => {
-              console.log(response);
-              self.maxTemp = response.data.maxTemp;
-              // self.name = response.data.name;
-              // self.age = response.data.age;
-              // self.human = response.data.human;
-          });
-      },
-
-      SubmitForm: function () {
-          var self = this;
-          axios.post('http://localhost:5000/test-post', {
-            maxTemp: self.maxTemp
-          })
-              .then(response => {
-                  console.log(response.data);
-              });
-      }
-
-      // this.http.get('/test').then(function(response){
-      //     data.list = response.data;
-      // }, function(error){
-      //     console.log(error.statusText);
-      // });
-  },
-  mounted: function () {
-      this.loadData();
-      //axios.get("http://localhost:5000/test").then(response => (console.log(response)))
-  }
-})
+//                   setTimeout(function () {
+//                     $('#alert-container').html('')
+//                   }, 4000);
+//               });
+//       }
+//   },
+//   mounted: function () {
+//       this.loadSettings();
+//       //axios.get("http://localhost:5000/test").then(response => (console.log(response)))
+//   }
+// })

@@ -5,6 +5,7 @@
 {% endwith %}
 
 <body class="d-flex flex-column h-100">
+  <div class="main-container" id="app">
   {% include 'nav.html' %}
 
   <main role="main" class="flex-shrink-0">
@@ -113,7 +114,7 @@
 
     </div>
   </main>
-
+</div>
   {% include 'footer.html' %}
 
 {% with modalid="delete-confirm-modal", modaltitle="Delete Firing Schedule?", modalbody="", buttonid="btn-delete-schedule", modalbutton="<i class='fas fa-trash'></i> Delete Schedule" %}

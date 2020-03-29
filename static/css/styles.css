@@ -58,3 +58,5 @@ canvas {
     margin-right:15px;
     width: 100%;
 }
+
+[v-cloak] { display: none; }

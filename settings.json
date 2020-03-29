@@ -1,14 +1,8 @@
 {
-    "cost":0.14,
-    "maxTemp":2500.0,
-    "notifications":{
-        "enable-email":false,
-        "receiver":"",
-        "sender":"pi.kiln.notification@gmail.com",
-        "sender-password":"NeverGonnaGiveYouUp!1",
-        "timezone":"Etc/GMT+3"
-    },
-    "offset-temp":4.0,
     "units":"fahrenheit",
-    "volts":220.0
+    "maxTemp":2500.0,
+    "offsetTemp":4.0,
+    "volts":220.0,
+    "cost":0.14,
+    "email":""
 }

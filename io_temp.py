@@ -19,7 +19,7 @@ def GetTemp(units):
 	tempF = (tempC * 1.8) + 32
 
 	# convert offset to correct units
-	offset = settings.settings['offset-temp']
+	offset = settings.settings['offsetTemp']
 	if units != settings.settings['units']:
 		if units == "celsius":
 			offset = (offset - 32) / 1.8

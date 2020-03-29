@@ -81,8 +81,9 @@ def import_schedule(file):
 
 def list_schedules():
 	print("getting list of schedules")
-	newData = {}
-	newData['schedules'] = []
+	newData = []
+	# newData = {}
+	# newData['schedules'] = []
 
 	for filename in os.listdir('schedules'):
 		if filename.endswith(".json"):
@@ -91,10 +92,12 @@ def list_schedules():
 			with open (fullPath, "r") as fileData:
 				print(filename)
 				jsonFileData = json.load(fileData) 
-				newData['schedules'].append({'path':filename, 'name':jsonFileData['name']})
+				# newData['schedules'].append({'path':filename, 'name':jsonFileData['name']})
+				newData.append({'path':filename, 'name':jsonFileData['name']})
 
 	print('sorting')
-	newData['schedules'] = sorted(newData['schedules'], key = lambda i: i['name']) 
+	# newData['schedules'] = sorted(newData['schedules'], key = lambda i: i['name'])
+	newData = sorted(newData, key = lambda i: i['name']) 
 	return jsonify(newData)
 
 def get_schedule(filename):

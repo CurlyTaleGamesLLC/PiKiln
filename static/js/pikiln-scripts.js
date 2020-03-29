@@ -2,69 +2,63 @@ var loadedSchedule;
 var loadedUnits;
 
 //loads drop down of options for firing schedules for both home page and edit firing schedules page
-function LoadSchedules() {
-  $.getJSON("api/list-schedules", function (result) {
-    console.log(result);
-    var dropdownHTML = '<option value="select-schedule" selected>Select Schedule</option>';
+// function LoadSchedules() {
+//   $.getJSON("api/list-schedules", function (result) {
+//     console.log(result);
+//     var dropdownHTML = '<option value="select-schedule" selected>Select Schedule</option>';
 
-    for (var i = 0; i < result['schedules'].length; i++) {
-      var optionValue = result['schedules'][i]['path'];
-      var optionName = result['schedules'][i]['name'];
-      var optionData = '<option value="' + optionValue + '">' + optionName + '</option>'
-      //console.log(optionName + " " + optionValue);
-      dropdownHTML += optionData;
-    }
+//     for (var i = 0; i < result['schedules'].length; i++) {
+//       var optionValue = result['schedules'][i]['path'];
+//       var optionName = result['schedules'][i]['name'];
+//       var optionData = '<option value="' + optionValue + '">' + optionName + '</option>'
+//       //console.log(optionName + " " + optionValue);
+//       dropdownHTML += optionData;
+//     }
 
-    $('#fireScheduleList').html(dropdownHTML);
-  });
-}
+//     $('#fireScheduleList').html(dropdownHTML);
+//   });
+// }
 
-//loads selected firing schedule for both home page and edit firing schedules page
-$('select[name="fireScheduleList"]').change(function () {
-  if ($(this).val() != "select-schedule") {
-    console.log("Load " + $(this).val());
-    editSchedule = $(this).val();
+// //loads selected firing schedule for both home page and edit firing schedules page
+// $('select[name="fireScheduleList"]').change(function () {
+//   console.log("SELECT SCHEDULE");
+//   if ($(this).val() != "select-schedule") {
+//     console.log("Load " + $(this).val());
+//     //editSchedule = $(this).val();
 
-    $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
-      console.log(result);
-      console.log("schedule units = " + result['units']);
-      loadedSchedule = result;
-      loadedUnits = result['units'];
-      $('#schedule-title').text(result['name']);
-      if(result['units'] == "fahrenheit"){
-        $('.degrees').each(function () {$(this).html($(this).html().replace("°C", "°F"))});
-      }
-      else{
-        $('.degrees').each(function () {$(this).html($(this).html().replace("°F", "°C"))});
-      }
+//     $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
+//       console.log(result);
+//       console.log("schedule units = " + result['units']);
+//       loadedSchedule = result;
+//       loadedUnits = result['units'];
+//       $('#schedule-title').text(result['name']);
+//       if(result['units'] == "fahrenheit"){
+//         $('.degrees').each(function () {$(this).html($(this).html().replace("°C", "°F"))});
+//       }
+//       else{
+//         $('.degrees').each(function () {$(this).html($(this).html().replace("°F", "°C"))});
+//       }
       
-      $('#schedule-body').html('');
-      for (i = 0; i < result['segments'].length; i++) {
-        var newRate = result['segments'][i]['rate'];
-        var newTemp = result['segments'][i]['temp'];
-        var newHold = result['segments'][i]['hold'];
-        var isEdit = window.location.pathname == "/firing-schedules";
-        var newSegment = LoadSegment(newRate, newTemp, newHold, isEdit);
-        $('#schedule-body').html($('#schedule-body').html() + newSegment);
-      }
-      $("#schedule-group").removeClass('d-none');
-    });
+//       $('#schedule-body').html('');
+//       for (i = 0; i < result['segments'].length; i++) {
+//         var newRate = result['segments'][i]['rate'];
+//         var newTemp = result['segments'][i]['temp'];
+//         var newHold = result['segments'][i]['hold'];
+//         var isEdit = window.location.pathname == "/firing-schedules";
+//         var newSegment = LoadSegment(newRate, newTemp, newHold, isEdit);
+//         $('#schedule-body').html($('#schedule-body').html() + newSegment);
+//       }
+//       $("#schedule-group").removeClass('d-none');
+//     });
 
-    //Estimate Time
-    UpdateEstimateTime($(this).val());
+//     //Estimate Time
+//     UpdateEstimateTime($(this).val());
 
-  }
-});
+//   }
+// });
 
 
-//TODO turn this into a python function to get the total time of the selected schedule
 function UpdateEstimateTime(schedulePath){
-
-  // if(editSchedule != undefined){
-  //   console.log("Edit Schedule = " + editSchedule);
-  //   schedulePath = editSchedule;
-  // }
-
     $.getJSON("api/get-time-estimate?schedulePath=" + schedulePath, function (result) {
       console.log("estimate");
       console.log(result);
@@ -75,97 +69,44 @@ function UpdateEstimateTime(schedulePath){
     });
 }
 
-//create html for a row in a firing schedule
-function LoadSegment(rate, temp, hold, isEdit) {
-  var html = '<tr class="segment-row"><td></td><td class="numbersOnly" contenteditable="' + isEdit + '">';
-  html += rate;
-  html += '</td><td class="numbersOnly" contenteditable="' + isEdit + '">';
-  html += temp;
-  html += '</td><td class="numbersOnly" contenteditable="' + isEdit + '">'
-  html += hold;
-  html += '</td>'
-  if (isEdit) {
-    html += '<td class="pt-3-half"><span class="table-up mr-2"><a class="badge badge-secondary" href="#!"><i class="fas fa-long-arrow-alt-up" aria-hidden="true"></i></a></span><span class="table-down"><a class="badge badge-secondary" href="#!"><i class="fas fa-long-arrow-alt-down" aria-hidden="true"></i></a></span></td><td><span class="table-remove"><button type="button" class="btn btn-danger btn-rounded btn-sm my-0"><i class="fas fa-trash"></i></button></span></td></tr>';
-  }
-
-  return html;
-}
 
 function GetStatus() {
   $.getJSON("api/get-current-status", function (result) {
     console.log(result);
 
-    //display the name of the firing schedule in the nav bar
-    if(result['status'] == "firing"){
-      $.getJSON("api/get-current-schedule", function (result2) {
-        $('.current-schedule').each(function () {$(this).text(" | " + result2['name'])});
-      });
-      $('#time-cost-estimates').removeClass("d-none");
-    }
-    else{
-      $('.current-schedule').each(function () {$(this).text("")});
-    }
-
-    SetFiringButtons(result['status'] == "firing");
+    //SetFiringButtons(result['status'] == "firing");
 
     if(result['status'] == "complete"){
       console.log("COMPLETE");
       //$('#home-time-summary').text();
       $('#home-cost-summary').text("$3.55");      
-      $('#home-complete').removeClass("d-none");
-      $('#time-cost-estimates').addClass("d-none");
+      //$('#home-complete').removeClass("d-none");
+      //$('#time-cost-estimates').addClass("d-none");
     }
     else{
-      $('#home-complete').addClass("d-none");
+      //$('#home-complete').addClass("d-none");
     }
 
     if(result['status'] == "error"){
       console.log("ERROR");
       $('#home-error-title').text(" Faulty Relay #1");
       $('#home-error-message').text("The 1st relay is not properly turning off or on. Please turn off power and replace the faulty relay with a new one");
-      $('#home-error').removeClass("d-none");
-      $('#time-cost-estimates').addClass("d-none");
+      //$('#home-error').removeClass("d-none");
+      //$('#time-cost-estimates').addClass("d-none");
     }
      
     //$('#status-state').text(result['status']);
     //$('#status-start-time').text(result['start-time']);
 
-    //update currently selected segment on the home page
-    if (window.location.pathname == "/" || window.location.pathname == "/index") {
-      $.getJSON("api/get-current-segment", function (result2) {
-        console.log(result2)
-        $('.segment-row').each(function () {
-          var isFiring = result['status'] == "firing"
-          var isSegmentIndex = $(this).index() == result2['segment']
-          if (isFiring && isSegmentIndex) {
-            $(this).addClass("current-segment");
-            $(this).addClass("text-light");
-          }
-          else {
-            $(this).removeClass("current-segment");
-            $(this).removeClass("text-light");
-          }
-        });
-      });
-    }
 
-  });
-
-   //update the current temperature inside the kiln in the nav bar
-   $.getJSON("api/temperature", function (result) {
-     //need to pass units as well with temp
-     console.log(result);
-    var tempUnits = result['units'] == "celsius" ? "°C" : "°F";
-    var tempUnitsText = result['temp'] + tempUnits;
-    $('.current-temperature').each(function () {$(this).text(tempUnitsText)});
   });
 
   //update time remaining
-  $.getJSON("api/get-total-time", function (result) {
-    //console.log("time");
-    console.log(result);
-    UpdateTimer(result['currentTime'], result['totalTime']);
-  });
+  // $.getJSON("api/get-total-time", function (result) {
+  //   //console.log("time");
+  //   console.log(result);
+  //   UpdateTimer(result['currentTime'], result['totalTime']);
+  // });
 }
 
 //highlight current page
@@ -218,12 +159,8 @@ $(document).ready(function () {
   //Filter Numbers Only
   setInterval(function () {NumbersOnly()}, 333);
 
-  GetStatus();
-  setInterval(function () { GetStatus() }, 5000);
-  
-  // if(window.location.pathname == "/firing-schedules" && editSchedule != undefined){
-  //   setInterval(function () {UpdateEstimateTime()}, 333);
-  // }
+  //GetStatus();
+  //setInterval(function () { GetStatus() }, 5000);
   
 });
 
@@ -246,3 +183,4 @@ function FormatTime(value){
   }
   return hours + ":" + mins;
 }
+

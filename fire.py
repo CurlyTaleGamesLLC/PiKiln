@@ -59,7 +59,10 @@ def get_current_units():
 	
 
 def get_current_segment():
-	return fire_active.currentSegment
+	if status == "firing":
+		return fire_active.currentSegment
+	else:
+		return -1
 
 def get_current_schedule_name():
 	global status
@@ -156,29 +159,45 @@ def Error(message):
 def DutyCycle(percent):
 	global dutyCycleLength
 	global firingComplete
+
 	# min of 100 ms
 	# Off
 	print("DUTY = " + str(percent))
 	print("LOW")
 	dutyCycleLowLength = dutyCycleLength * (1.0 - percent)
+
+	# Relays need at least 0.1 seconds to switch
 	if dutyCycleLowLength > 0.1:
 		io_relay.AllOff()
-		time.sleep(dutyCycleLowLength / 2)
-		if io_current.IsConnected():
-			Error("Bad Current Sensor or two bad relays, unplug now!")
-			return
-		time.sleep(dutyCycleLowLength / 2)
+		# give the current transformer enough time to read the magnetic field
+		if dutyCycleLowLength > 0.5:
+			time.sleep(dutyCycleLowLength / 2)
+			# current sensor is detecting current when there shouldn't be any
+			if io_current.IsConnected():
+				Error("Bad Current Sensor or two bad relays, unplug now!")
+				return
+			time.sleep(dutyCycleLowLength / 2)
+		else:
+			time.sleep(dutyCycleLowLength)
+	
+	
 	# On
 	print("HIGH")
 	dutyCycleHighLength = dutyCycleLength * percent
+
+	# Relays need at least 0.1 seconds to switch
 	if dutyCycleHighLength > 0.1 and not firingComplete:
 		io_relay.AllOn()
-		time.sleep(dutyCycleHighLength / 2)
-		# check for current
-		if not io_current.IsConnected():
-			Error("Bad Current Sensor, or bad relay")
-			return
-		time.sleep(dutyCycleHighLength / 2)
+		# give the current transformer enough time to read the magnetic field
+		if dutyCycleHighLength > 0.5:
+			time.sleep(dutyCycleHighLength / 2)
+			# current sensor is not detecting current when there should be
+			if not io_current.IsConnected():
+				Error("Bad Current Sensor, or bad relay")
+				return
+			time.sleep(dutyCycleHighLength / 2)
+		else:
+			time.sleep(dutyCycleHighLength)
 
 	if firingComplete:
 		io_relay.AllOff()

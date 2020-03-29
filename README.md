@@ -150,9 +150,9 @@ https://github.com/adafruit/Adafruit_CircuitPython_MAX31855
 
 https://github.com/johnrbnsn/Adafruit_Python_MAX31856
 
-Ivmech PID Controller
+Simple PID Controller
 
-https://github.com/ivmech/ivPID
+https://pypi.org/project/simple-pid/
 
 
 # References #

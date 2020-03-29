@@ -4,6 +4,8 @@ from flask import Flask, render_template, request, jsonify
 import json
 import uuid
 import os
+import pytz
+
 import fire
 import fire_logs
 import fire_active
@@ -38,18 +40,24 @@ def GetTimeEstimate():
 
 @app.route('/api/get-current-segment')
 def get_current_segment():
-	segIndex = fire.get_current_segment()
-	return jsonify(segment=segIndex)
-
-@app.route('/api/get-current-schedule')
-def get_current_schedule():
 	scheduleName = fire.get_current_schedule_name()
-	return jsonify(name=scheduleName)
-
-@app.route('/api/get-current-status')
-def get_current_status():
 	scheduleStatus = fire.get_current_status()
-	return jsonify(status=scheduleStatus)
+	segIndex = fire.get_current_segment()
+
+	# time 
+	newTime = fire.get_total_time()
+	
+	return jsonify(name=scheduleName, status=scheduleStatus, segment=segIndex, currentTime=newTime[0], totalTime=newTime[1])
+
+# @app.route('/api/get-current-schedule')
+# def get_current_schedule():
+# 	scheduleName = fire.get_current_schedule_name()
+# 	return jsonify(name=scheduleName)
+
+# @app.route('/api/get-current-status')
+# def get_current_status():
+# 	scheduleStatus = fire.get_current_status()
+# 	return jsonify(status=scheduleStatus)
 
 @app.route('/api/temperature')
 def api_temp():
@@ -120,10 +128,17 @@ def api_get_chart():
 	return fire_logs.get_chart()
 
 # This is kind of hacky and needs some cleanup
-@app.route('/api/update-settings', methods=['POST'])
-def update_settings():
+@app.route('/api/save-settings', methods=['POST'])
+def save_settings():
+	print("Saving Settings:")
+	print(request)
+	req_data = request.get_json()
+	# print(request.data['maxTemp'])
+	print(req_data)
+	print(req_data['maxTemp'])
+
 	rawData = request.form
-	return settings.update_settings(rawData)
+	return settings.save_settings(req_data)
 
 
 # render html templates

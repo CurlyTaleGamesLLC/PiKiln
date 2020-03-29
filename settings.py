@@ -28,35 +28,17 @@ def int_default(n,d):
 def str2bool(v):
 	return v.lower() in ("yes", "true", "t", "1")
 
-def update_settings(rawData):
+def save_settings(rawData):
 	global settings
 	print(rawData)
-
-	# reformat data from form
-	newData = {}
-	newData['notifications'] = {}
-	newData['notifications']['timezone'] = rawData['timezone']
-	newData['notifications']['sender'] = rawData['sender']
-	newData['notifications']['sender-password'] = rawData['sender-password']
-	newData['notifications']['receiver'] = rawData['receiver']
-	# form has to send checked value of on in order for enable-email to have any value
-	newData['notifications']['enable-email'] = is_json_key_present(rawData, 'enable-email')
-	newData['cost'] = float(rawData['cost'])
-	newData['volts'] = float(rawData['volts'])
-
-	isFahrenheit = is_json_key_present(rawData, 'units')
-	newData['units'] = "fahrenheit" if isFahrenheit else "celsius"
-
-	newData['maxTemp'] = float(rawData['maxTemp'])
-	newData['offset-temp'] = float_default(float(rawData['offset-temp']), 0.0)
 		
 	# write new settings to json file
 	with open('settings.json', 'w') as f:
-		json.dump(newData, f, indent=4, separators=(',', ':'), sort_keys=True)
+		json.dump(rawData, f, indent=4, separators=(',', ':'), sort_keys=True)
 		#add trailing newline for POSIX compatibility
 		f.write('\n')
 
-	settings = newData
+	settings = rawData
 
 	return jsonify(result=True)
 

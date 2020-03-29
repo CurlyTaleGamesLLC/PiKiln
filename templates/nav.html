@@ -13,5 +13,5 @@
             <a class="nav-item nav-link" href="settings">Settings</a>
         </div>
     </div>
-    <span class="text-light d-none d-lg-block d-xl-block"><span class="current-temperature"></span><span class="current-schedule"></span></span>
+    <span class="text-light d-none d-lg-block d-xl-block"><span v-cloak>[[ cTemp.temp ]]</span><span v-cloak>[[ cTemp.units == "celsius" ? "°C" : "°F" ]]</span><span class="current-schedule">[[ firing.name !== "" ? " | " + firing.name : "" ]]</span></span>
 </nav>

@@ -6,6 +6,7 @@
 {% endwith %}
 
 <body class="d-flex flex-column h-100">
+    <div class="main-container" id="app">
     {% include 'nav.html' %}
 
     <main role="main" class="flex-shrink-0 mb-4">
@@ -34,6 +35,7 @@
 
     <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 
+</div>
 
     {% include 'footer.html' %}
 
@@ -45,6 +47,7 @@
         });
     </script>
 
+    
 </body>
 
 </html>

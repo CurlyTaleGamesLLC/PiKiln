@@ -27,8 +27,8 @@ import settings
 # }
 
 def GetTimestamp():
-    tzone = pytz.timezone(settings.settings['notifications']['timezone'])
-    nowTime = datetime.datetime.now(tzone)
+    # tzone = pytz.timezone(settings.settings['notifications']['timezone'])
+    nowTime = datetime.datetime.now()
     nowTimeFormat = nowTime.strftime("%Y-%m-%d %H:%M:%S")
     print(nowTimeFormat)
     return nowTimeFormat
@@ -61,12 +61,12 @@ def EmailContent(contentPath, contentJSON):
 # Sends email to receiver
 def SendEmail(contentPath, contentJSON):
     print("Send Email?")
-    if settings.settings['notifications']['enable-email']:
+    if settings.settings['email'] != "":
         print("Sending Email")
         url = "https://p44f20evs1.execute-api.us-east-1.amazonaws.com/Production/send"
 
         emailObject = {
-            "toEmail": settings.settings['notifications']['receiver'],
+            "toEmail": settings.settings['email'],
             "subject": contentJSON['subject'] + " " + GetTimestamp(),
             "message": EmailContent(contentPath, contentJSON)
         }
