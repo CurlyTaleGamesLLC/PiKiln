@@ -92,11 +92,9 @@ def list_schedules():
 			with open (fullPath, "r") as fileData:
 				print(filename)
 				jsonFileData = json.load(fileData) 
-				# newData['schedules'].append({'path':filename, 'name':jsonFileData['name']})
 				newData.append({'path':filename, 'name':jsonFileData['name']})
 
 	print('sorting')
-	# newData['schedules'] = sorted(newData['schedules'], key = lambda i: i['name'])
 	newData = sorted(newData, key = lambda i: i['name']) 
 	return jsonify(newData)
 
@@ -104,7 +102,6 @@ def get_schedule(filename):
 	# print(request)
 	# filename = request.args.get('schedulePath')
 	print("getting schedule " + filename)
-
 	fullPath = os.path.join('schedules', filename)
 	
 	with open (fullPath, "r") as fileData:
@@ -120,20 +117,17 @@ def get_schedule(filename):
 
 	return jsonify(result=False)
 
+# writes schedule to disk
 def save_schedule(scheduleJSON):
 	# scheduleJSON = request.json
 	fullPath = os.path.join('schedules', scheduleJSON['path'])
 
-	# I'm confused as to what this actually does...
 	with open(fullPath, 'w') as f:
 
 		# Convert to degrees C/F
+		# I think i can get rid of this. temperatures are now stored in native units
 		for segment in scheduleJSON['segments']:
-			# print("RATE")
-			# print(segment['rate'])
 			segment['rate'] = segment['rate']
-			# print("TEMP")
-			# print(segment['temp'])
 			segment['temp'] = segment['temp']
 
 		json.dump(scheduleJSON, f, indent=4, separators=(',', ':'), sort_keys=True)

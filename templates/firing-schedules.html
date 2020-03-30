@@ -21,16 +21,13 @@
           </div>
         </div>
 
-        
-
         <!--add rows and delete firing schedule-->
         <div class="row mt-3">
           <div class="col-md-12">
             <button id="btn-create-schedule" class="btn btn-primary btn-responsive mb-2" v-on:click="onScheduleCreateNew"><i class="fas fa-file-alt"></i> New Schedule</button>
-            <!-- TO DO: Add the ability to Duplicate existing schedules -->
-            <button id="btn-duplicate-schedule" class="btn btn-light btn-responsive mb-2"><i class="fas fa-copy"></i><span class="d-none d-sm-inline"> Duplicate</span></button>
+            <button id="btn-duplicate-schedule" class="btn btn-light btn-responsive mb-2" v-on:click="onScheduleDuplicate"><i class="fas fa-copy"></i><span class="d-none d-sm-inline"> Duplicate</span></button>
             <button id="btn-import-schedule" class="btn btn-light btn-responsive mb-2"><i class="fas fa-file-upload"></i><span class="d-none d-sm-inline"> Import</span></button>
-            <button id="btn-download-schedule" class="btn btn-light btn-responsive mb-2"><i class="fas fa-file-download"></i><span class="d-none d-sm-inline"> Export</span></button>
+            <button id="btn-download-schedule" class="btn btn-light btn-responsive mb-2" v-on:click="onScheduleDownload"><i class="fas fa-file-download"></i><span class="d-none d-sm-inline"> Export</span></button>
             
 
             <form id="importForm" enctype="multipart/form-data" class="d-none">
@@ -41,20 +38,7 @@
           </div>
         </div>
 
-        <!-- <script>
-            importForm.onsubmit = async (e) => {
-              e.preventDefault();
-          
-              let response = await fetch('/api/import-schedule', {
-                method: 'POST',
-                body: new FormData(importForm)
-              });
-          
-              let result = await response.json();
-              location.reload();
-              //alert(result.message);
-            };
-          </script> -->
+        
 
       <div id="schedule-group" v-bind:class="{'d-none':(schedule.path === '')}">
 
@@ -139,12 +123,32 @@
 
 
 {% include 'footer-scripts.html' %}
-  <!-- <script>
-    $(document).ready(function() {
-        console.log( "document loaded" );
-        CelsiusConeChart();
+ 
+<script>
+  //Import Schedule Scripts
+    importForm.onsubmit = async (e) => {
+      e.preventDefault();
+  
+      let response = await fetch('/api/import-schedule', {
+        method: 'POST',
+        body: new FormData(importForm)
+      });
+  
+      let result = await response.json();
+      location.reload();
+      //alert(result.message);
+    };
+
+    $('#btn-import-schedule').click(function () {
+      console.log("Import Schedule");
+      $('#import-schedule').click();
     });
-</script> -->
+
+    //auto submits the schedule import upload
+    $('#import-schedule').on('change', function () {
+      $('#importForm').submit();
+    });
+  </script>
 
 </body>
 

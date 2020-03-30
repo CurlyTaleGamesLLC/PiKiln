@@ -4,7 +4,6 @@ from flask import Flask, render_template, request, jsonify
 import json
 import uuid
 import os
-import pytz
 
 import fire
 import fire_logs
@@ -53,16 +52,6 @@ def get_current_segment():
 
 	return jsonify(name=scheduleName, status=scheduleStatus, segment=segIndex, currentTime=newTime[0], totalTime=newTime[1], error=error)
 
-# @app.route('/api/get-current-schedule')
-# def get_current_schedule():
-# 	scheduleName = fire.get_current_schedule_name()
-# 	return jsonify(name=scheduleName)
-
-# @app.route('/api/get-current-status')
-# def get_current_status():
-# 	scheduleStatus = fire.get_current_status()
-# 	return jsonify(status=scheduleStatus)
-
 @app.route('/api/temperature')
 def api_temp():
 	# print("getting temperature" + str(fire.get_current_temperature()))
@@ -74,8 +63,8 @@ def api_temp():
 
 @app.route('/api/duplicate-schedule', methods=['POST'])
 def duplicate_schedule():
-	# # import file and create a unique filename
-	filename = request.form.get('schedulePath')
+	# duplicate file and create a unique filename
+	filename = request.args.get('schedulePath')
 	return schedules.duplicate_schedule(filename)
 
 @app.route('/api/delete-schedule', methods=['DELETE'])

@@ -17,7 +17,6 @@ logCounter = 0
 def StartLog(logName, logUnits):
 
 	global log
-	# logTimezone = settings.settings['notifications']['timezone']
 
 	print ("SET UP LOG FILE")
 	logDataJSON = {}
@@ -37,11 +36,6 @@ def StartLog(logName, logUnits):
 	log = logDataJSON
 	WriteLog()
 
-	# with open('log.json', 'w') as f:
-	# 	json.dump(logDataJSON, f, indent=4, separators=(',', ':'), sort_keys=True)
-	# 	#add trailing newline for POSIX compatibility
-	# 	f.write('\n')
-
 # reads log.json and adds new temp to temp-log
 def AddData(newTemp, scheduledTemp):
 
@@ -50,11 +44,6 @@ def AddData(newTemp, scheduledTemp):
 
 	log['tempLog'].append(newTemp)
 	log['scheduleLog'].append(scheduledTemp)
-
-	# with open ('log.json', "r") as fileData:
-	# 	jsonFileData = json.load(fileData)
-	# 	jsonFileData['temp-log'].append(newTemp)
-	# 	jsonFileData['schedule-log'].append(scheduledTemp)
 
 	# limit the number of disk writes, with a duty cycle of 4 seconds this works out to every 5 mins
 	logCounter = logCounter + 1

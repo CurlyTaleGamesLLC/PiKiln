@@ -234,6 +234,13 @@ var app = new Vue({
         .then(response => {
             console.log(response.data);
 
+            //update name of saved schedule in list
+            for(var i = 0; i < self.scheduleList.length; i++){
+                if(self.scheduleList[i].path == self.schedule.path){
+                    self.scheduleList[i].name = self.schedule.name;
+                }
+            }
+
             //show schedule saved message for 4 seconds
             $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-1" role="alert" id="alert-save-settings"><strong>Schedule Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
     
@@ -282,22 +289,54 @@ var app = new Vue({
             
             $("#fireScheduleList").val("select-schedule").change();
         });
+    },
 
-        // $.ajax({
-        //     url: 'api/delete-schedule?schedulePath=' + editSchedule,
-        //     type: 'DELETE',
-        //     success: function (result) {
-        //       console.log(result);
-        //       $("#fireScheduleList").val("select-schedule").change();
-        //       $("#fireScheduleList option[value='" + editSchedule + "']").remove();
-        //       $('#schedule-title').text('');
-        //       $('#schedule-body').html('');
-        //       $("#schedule-group").addClass('d-none');
-        //       editSchedule = null;
-        //     }
-        //   });
+    //downloads schedule
+    onScheduleDownload: function(){
+        var self = this;
+        
+        if(self.schedule.path == null){return;}
+
+        axios.get('api/get-schedule?schedulePath=' + self.schedule.path).then(response => {
+            var json = JSON.stringify(response.data);
+            var blob = new Blob([json], {type: "application/json"});
+            var url  = URL.createObjectURL(blob);
+      
+            var link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', response.data['name'] + '.json');
+            
+            var aj = $(link);
+            aj.appendTo('body');
+            aj[0].click();
+            aj.remove();
+            
+            URL.revokeObjectURL(url);
+        });
+      },
+      onScheduleDuplicate: function(){
+        var self = this;
+
+        if(self.schedule.path == null){return;}
+
+        axios.post('/api/duplicate-schedule?schedulePath=' + self.schedule.path)
+        .then(response => {
+            console.log(response.data);
+
+            var newSchedule = {};
+            newSchedule['name'] = response.data['name'];
+            newSchedule['path'] = response.data['filename'];
+
+            self.scheduleList.push(newSchedule);
+            //give vue a moment to update itself before selecting new schedule
+            setTimeout(function () {
+                $("#fireScheduleList").val(response.data['filename']).change();
+                self.onScheduleSelectPath(response.data['filename']);
+            }, 500);
+
+            
+        });
     }
-
    
   },
     mounted: function () {

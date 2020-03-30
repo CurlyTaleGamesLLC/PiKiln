@@ -49,7 +49,6 @@
                 <td class="numbersOnly" contenteditable="false">[[ segment.hold ]]</td>
             </tr>
            
-
           </tbody>
         </table>
       </div>
@@ -120,7 +119,7 @@
   </main>
 
 
-  {% with modalid="start-confirm-modal", modaltitle="Start Firing Schedule?", modalbody="", buttonid="btn-start-schedule", modalbutton="<i class='fas fa-burn'></i> Start Schedule", modalfunction="startFire(schedule.path)" %}
+{% with modalid="start-confirm-modal", modaltitle="Start Firing Schedule?", modalbody="", buttonid="btn-start-schedule", modalbutton="<i class='fas fa-burn'></i> Start Schedule", modalfunction="startFire(schedule.path)" %}
 {% include 'modal-primary.html' %}
 {% endwith %}
 
@@ -130,13 +129,9 @@
 
 </div>
 
-  {% include 'footer.html' %}
-
-
-
+{% include 'footer.html' %}
 {% include 'footer-scripts.html' %}
 
-    
 </body>
 
 </html>

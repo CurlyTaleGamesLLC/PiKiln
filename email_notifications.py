@@ -2,7 +2,6 @@ import requests
 import os
 import io
 import datetime
-import pytz
 
 import settings
 
@@ -27,7 +26,6 @@ import settings
 # }
 
 def GetTimestamp():
-    # tzone = pytz.timezone(settings.settings['notifications']['timezone'])
     nowTime = datetime.datetime.now()
     nowTimeFormat = nowTime.strftime("%Y-%m-%d %H:%M:%S")
     print(nowTimeFormat)

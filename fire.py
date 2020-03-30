@@ -115,11 +115,6 @@ def CheckMaxTemp(currentTemp):
 		Error("Max Temperature Exceeded")
 
 
-
-# returns number of seconds in all of the phases of a firing schedule
-# def get_schedule_time():
-# 	return fire_active.duration * 3600.0
-
 # sets the kiln in an error state and turns off the relays
 def Error(message):
 	global error
@@ -269,7 +264,6 @@ def FireLoop():
 			# add amp sensor reading to log
 
 		# firing has completed!
-		# fire_active.duration
 		print("duration = " + str(currentTime) + " / " + str(fire_active.duration * 3600))
 		if currentTime > fire_active.duration * 3600:
 			print("FIRING COMPLETE")
@@ -325,8 +319,6 @@ def StopFire():
 	except NameError:
 		print("thread wasn't defined")
 
-	# if fireThread.isAlive():
-		
 	status = "canceled"
 	print('thread killed') 
 

@@ -1,18 +1,3 @@
-//var loadedSchedule;
-//var loadedUnits;
-
-
-// function UpdateEstimateTime(schedulePath){
-//     $.getJSON("api/get-time-estimate?schedulePath=" + schedulePath, function (result) {
-//       console.log("estimate");
-//       console.log(result);
-//       totalLength = result['time'] * 3600;
-//       console.log(totalLength);
-//       $('#home-time').text(FormatTime(totalLength));
-//       $('#home-time-summary').text(FormatTime(totalLength));
-//     });
-// }
-
 //highlight current page
 function HighlightNav(){
   $('.nav-item').each(function () {
@@ -70,5 +55,46 @@ function f2c(value){
   return (value - 32) * 5 / 9;
 }
 
+function CelsiusConeChart(){
+  console.log("rows?");
+  var index = 0;
+
+  $('.cone-row').each(function() {
+    if(index > 0){
+      var newHtml = $(this).html();
+
+      var newTemp = $(this).find("td").eq(3).text().replace("°F", "");
+      newTemp = f2c(parseInt(newTemp));
+
+      newHtml += AddTD(newTemp.toFixed(0) + "°C");
+      console.log(newHtml);
+      
+      $(this).html(newHtml);
+    }
+    index++;
+  });
+}
 
 
+function ScrapeTable(){
+  var newHtml = "";
+  var index = 0;
+  $('#cone-table tr').each(function() {
+    
+    if(index < 36){
+      newHtml += '<tr>'; 
+      newHtml += AddTD($(this).find("td").eq(0).text());
+      newHtml += AddTD($(this).find("td").eq(1).text());
+      newHtml += AddTD($(this).find("td").eq(2).text());
+      newHtml += AddTD($(this).find("td").eq(3).text());
+      index++;
+      newHtml += '</tr>';
+    }
+     
+  });
+  return newHtml;
+}
+
+function AddTD(cellData){
+  return '<td>' + cellData + '</td>';
+}
