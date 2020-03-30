@@ -75,6 +75,10 @@ def get_current_status():
 	global status
 	return status
 
+def get_error_message():
+	global errorMessage
+	return errorMessage
+
 def get_total_time():
 	global currentTime
 	return currentTime, fire_active.duration * 3600.0
@@ -192,6 +196,7 @@ def DutyCycle(percent):
 		if dutyCycleHighLength > 0.5:
 			time.sleep(dutyCycleHighLength / 2)
 			# current sensor is not detecting current when there should be
+			# TODO add sampling and check against the average current
 			if not io_current.IsConnected():
 				Error("Bad Current Sensor, or bad relay")
 				return
@@ -224,6 +229,8 @@ def FireLoop():
 	while not firingComplete:
 		if stop_threads: 
 			io_relay.AllOff()
+			fire_logs.WriteLog()
+			fire_logs.UpdateTotals(0.5, currentTime)
 			print("THREAD STOPPED")
 			break
 
@@ -278,6 +285,8 @@ def FireLoop():
 
 			firingComplete = True
 			io_relay.AllOff()
+			fire_logs.WriteLog()
+			fire_logs.UpdateTotals(0.5, currentTime)
 
 
 def StartFire(filename):
@@ -308,6 +317,7 @@ def StopFire():
 	global status
 
 	io_relay.AllOff()
+	fire_logs.WriteLog()
 
 	stop_threads = True
 	try:

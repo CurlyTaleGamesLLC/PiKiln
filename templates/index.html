@@ -13,7 +13,7 @@
   <main role="main" class="flex-shrink-0">
     <div class="container">
 
-        <div id="home-schedule-list" class="row">
+        <div id="home-schedule-list" v-bind:class="{'row':true, 'd-none':(firing.status === 'firing')}">
           <div class="col-12">
             <h2>Select Firing Schedule:</h2>
             <!-- <select class="custom-select" id="fireScheduleList" name="fireScheduleList">
@@ -26,8 +26,7 @@
           </div>
         </div>
 
-
-      <div id="schedule-group">
+      <div id="schedule-group" v-bind:class="{'d-none':(schedule.path === '')}">
 
       <h2 class="mb-3 mt-3" contenteditable="false" id="schedule-title">[[ schedule.name ]]</h2>
 
@@ -68,8 +67,8 @@
         <div id="time-cost-estimates" v-bind:class="{'col-12' : true, 'd-none':(firing.status === 'firing')}">
         <!--cost estimates-->
         <ul id="home-estimates" v-bind:class="{'list-group':true, 'col-12':true, 'mb-3':true, 'd-none':(firing.status === 'firing')}">
-          <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">1:00</span></li>
-          <!-- <li class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">$3.50</span></li> -->
+          <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">[[ timeEstimate ]]</span></li>
+          <li v-bind:class="{'list-group-item' : true, 'd-none':(firing.status !== 'firing')}"><b>Estimated Cost:</b> <span id="home-cost">$ [[ cost ]]</span></li>
         </ul>
 
         </div>
@@ -78,10 +77,10 @@
         
         <div id="home-time-group" v-bind:class="{'row':true, 'mb-3':true, 'd-none':(firing.status !== 'firing')}">
           
-          <h5 class="col-12"><i class="fas fa-hourglass-half"></i> Time Remaining: <span id="home-time-remaining">0:00</span></h5>
+          <h5 class="col-12"><i class="fas fa-hourglass-half"></i> Time Remaining: <span id="home-time-remaining">[[ firing.timeRemaining ]]</span></h5>
         
           <div class="progress">
-            <div id="home-time-bar" class="progress-bar progress-bar-striped progress-bar-animated" :style="{ width: firing.currentTime/firing.totalTime + '%' }"></div>
+            <div id="home-time-bar" class="progress-bar progress-bar-striped progress-bar-animated" :style="{ width: ((firing.currentTime/firing.totalTime) * 100) + '%' }"></div>
           </div>
         
         </div>
@@ -91,15 +90,16 @@
           <!--cost estimates-->
           <div class="col-12">
             <ul id="home-summary" class="list-group col-12 mb-4">
-              <li class="list-group-item"><b>Total Time:</b> <span id="home-time-summary">1:00</span></li>
+              <li class="list-group-item"><b>Total Time:</b> <span id="home-time-summary">[[ timeEstimate ]]</span></li>
               <li class="list-group-item"><b>Cost:</b> <span id="home-cost-summary">$3.50</span></li>
             </ul>
           </div>
         </div>
 
+
         <div id="home-error" v-bind:class="{'row' : true, 'd-none':(firing.status !== 'error')}">
-          <h5 class="col-12"><i class="fas fa-exclamation-triangle"></i><span id="home-error-title"> Faulty Relay #1</span></h5>
-          <p id="home-error-message" class="col-12">The firing schedule was stopped due to </p>
+          <h5 class="col-12"><i class="fas fa-exclamation-triangle"></i><span id="home-error-title"> [[ firing.error ]]</span></h5>
+          <p id="home-error-message" class="col-12">There was an error detected with the kiln. Please verify that all of the components are working correctly.</p>
         </div>
 
       
@@ -122,27 +122,20 @@
     </div>
   </main>
 
+
+  {% with modalid="start-confirm-modal", modaltitle="Start Firing Schedule?", modalbody="", buttonid="btn-start-schedule", modalbutton="<i class='fas fa-burn'></i> Start Schedule", modalfunction="startFire(schedule.path)" %}
+{% include 'modal-primary.html' %}
+{% endwith %}
+
+{% with modalid="stop-confirm-modal", modaltitle="Stop Firing Schedule?", modalbody="", buttonid="btn-stop-schedule", modalbutton="<i class='fas fa-ban'></i> Stop Schedule", modalfunction="stopFire"  %}
+{% include 'modal-danger.html' %}
+{% endwith %}
+
 </div>
 
   {% include 'footer.html' %}
 
-{% with modalid="start-confirm-modal", modaltitle="Start Firing Schedule?", modalbody="", buttonid="btn-start-schedule", modalbutton="<i class='fas fa-burn'></i> Start Schedule" %}
-{% include 'modal-primary.html' %}
-{% endwith %}
 
-{% with modalid="stop-confirm-modal", modaltitle="Stop Firing Schedule?", modalbody="", buttonid="btn-stop-schedule", modalbutton="<i class='fas fa-ban'></i> Stop Schedule" %}
-{% include 'modal-danger.html' %}
-{% endwith %}
-
-
-
-
-  <script>
-    $(document).ready(function() {
-        console.log( "document loaded" );
-        LoadSchedules();
-    });
-</script>
 
 {% include 'footer-scripts.html' %}
 

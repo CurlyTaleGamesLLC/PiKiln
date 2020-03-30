@@ -1,14 +1,4 @@
 ////GRAPH DATA
-window.onload = function () {
-    LoadChart();
-};
-
-function LoadChart() {
-    $.getJSON("api/get-chart", function (result) {
-      console.log(result);
-      LoadLineGraph(result['start-time'], result['temp-log'], result['schedule-log']);
-    });
-}
 
 function newDate(mins) {
     return moment().add(mins, 'm').toDate();
@@ -23,7 +13,6 @@ function TimeRange(startTime, values){
     return range;
 }
 
-
 function LoadLineGraph(startTime, actual, scheduled) {
     var ctx = document.getElementById('canvas').getContext('2d');
     var pointSize = 5;
@@ -34,8 +23,6 @@ function LoadLineGraph(startTime, actual, scheduled) {
     jsonData['scheduled'] = scheduled;
     jsonData['actual'] = actual;
 
-    //jsonData['scheduled'] = [0,1,2,3,4,5,6,7,8,9];
-    //jsonData['actual'] = [0,3,2,5,3,2,1,2,5,8];
 
     var chart = new Chart(ctx, {
         // The type of chart we want to create

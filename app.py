@@ -44,10 +44,14 @@ def get_current_segment():
 	scheduleStatus = fire.get_current_status()
 	segIndex = fire.get_current_segment()
 
+	error = ""
+	if scheduleStatus == "error":
+		error = fire.get_error_message()
+
 	# time 
 	newTime = fire.get_total_time()
-	
-	return jsonify(name=scheduleName, status=scheduleStatus, segment=segIndex, currentTime=newTime[0], totalTime=newTime[1])
+
+	return jsonify(name=scheduleName, status=scheduleStatus, segment=segIndex, currentTime=newTime[0], totalTime=newTime[1], error=error)
 
 # @app.route('/api/get-current-schedule')
 # def get_current_schedule():
@@ -100,6 +104,11 @@ def list_schedules():
 @app.route('/api/get-schedule')
 def get_schedule():
 	filename = request.args.get('schedulePath')
+
+	# resets status from complete to idle when a new schedule is selected
+	if fire.status == "complete":
+		fire.status = "idle"
+
 	return schedules.get_schedule(filename)
 
 @app.route('/api/save-schedule', methods=['POST'])

@@ -74,7 +74,7 @@ $('#btn-save-schedule').click(function () {
       console.log(data);
       LoadSchedules();
 
-      UpdateEstimateTime(data['path']);
+      //UpdateEstimateTime(data['path']);
       
 
       $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-1" role="alert" id="alert-save-settings"><strong>Schedule Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');

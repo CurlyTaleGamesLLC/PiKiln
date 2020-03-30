@@ -1,49 +1,43 @@
 var app = new Vue({
     el: '#app',
     data: {
-      firing:{
-        status:'firing',
-        name:'test firing',
-        segment:0
-      },
-      schedule:{
-          name:'test',
-          path:'2d90d327-f107-4c9f-8c4a-d785cc227cc7.json',
-          segments:[
+    
+        firing:{
+            status:'firing',
+            name:'test firing',
+            segment:0,
+            error:"",
+            timeRemaining:""
+        },
+        cost:0,
+        timeEstimate:"2:00",
+        schedule:{
+            name:'',
+            path:'',
+            segments:[
             {
-                hold:60,
                 rate:100,
-                temp:500
+                temp:200,
+                hold:10
             },
             {
-                hold:60,
-                rate:9999,
-                temp:2167
-            },
-            {
-                hold:60,
-                rate:120,
-                temp:800
+                rate:100,
+                temp:200,
+                hold:10
             }
-        ],
-        units:"fahrenheit"
-    },
-    scheduleList:[
-        {
-            name:'test1',
-            path:'123.json'
+            ],
+            units:''
         },
-        {
-            name:'test2',
-            path:'1234.json'
+        scheduleList:[],
+        cTemp:[],
+        settings:[],
+        totals:{
+            fires:4,
+            cost:4,
+            time:1
         },
-        {
-            name:'test3',
-            path:'12345.json'
-        }
-    ],
-      cTemp:[],
-      settings:[]
+        log:[]
+
     },
     delimiters: ['[[', ']]'],
     methods: {
@@ -89,7 +83,7 @@ var app = new Vue({
         var self = this;
         axios.get("/api/get-current-segment").then(response => {
           self.firing = response.data;
-          $('#home-time-remaining').text(FormatTime(self.firing.totalTime - self.firing.currentTime));
+          self.firing.timeRemaining = self.formatTime(self.firing.totalTime - self.firing.currentTime)
         });
       },
 
@@ -107,20 +101,92 @@ var app = new Vue({
             var self = this;
             axios.get("/api/get-schedule?schedulePath=" + event.target.value).then(response => {
                 self.schedule = response.data;
-                //UpdateEstimateTime($(this).val());
+                self.updateTimeEstimate(event.target.value);
+                //forces a refresh of the current status
+                self.getCurrentSegment();
             });
         }
-      }
+      },
 
-      //$.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
-      
+      //updates the estimated time for the current schedule
+      updateTimeEstimate: function(path){
+        var self = this;
+        axios.get("/api/get-time-estimate?schedulePath=" + path).then(response => {
+            console.log(response.data);
+            self.timeEstimate = self.formatTime(response.data['time'] * 3600);
+        });
+      },
+
+      //starts the firing schedule
+      startFire: function(path){
+        var self = this;
+        axios.get("/api/start-fire?schedulePath=" + path).then(response => {
+            console.log(response.data);
+            self.getCurrentSegment();
+        });
+      },
+
+      //stops the firing schedule
+      stopFire: function(){
+        var self = this;
+        axios.get("/api/stop-fire").then(response => {
+            console.log(response.data);
+            self.getCurrentSegment();
+            //sometimes it takes a second for the status to change to stopped
+            setTimeout(function () {self.getCurrentSegment()}, 500);
+        });
+      },
+
+      //gets list of all firing schedules
+      getTotals: function(){
+        var self = this;
+        axios.get("/api/load-totals").then(response => {
+          self.totals = response.data;
+        });
+      },
+
+      formatTime: function(value){
+        valueMins = value / 60;
+        if(valueMins < 0){
+          valueMins = 0;
+        }
+        var hours = Math.floor(valueMins / 60).toString();
+        var mins = Math.floor(valueMins % 60).toString();
+        if(mins.length < 2){
+          mins = "0" + mins;
+        }
+        return hours + ":" + mins;
+      },
+
+      formatCost: function(value){
+        return "$" + value.toFixed(2).toString();
+      },
+
+       //gets list of all firing schedules
+      getChart: function(){
+        var self = this;
+        axios.get("/api/get-chart").then(response => {
+          self.log = response.data;
+          LoadLineGraph(self.log['startTime'], self.log['tempLog'], self.log['scheduleLog']);
+        });
+      }
   },
     mounted: function () {
       if (window.location.pathname == "/" || window.location.pathname == "/index") {
         //home page
         this.getScheduleList();
       }
+      if (window.location.pathname == "/firing-schedules") {
+        //edit firing schedules page
+        this.getScheduleList();
+      }
+      if (window.location.pathname == "/logging") {
+        //logging page
+        this.getTotals();
+        this.getChart();
+      }
       if (window.location.pathname == "/settings") {
+        //settings page
         this.loadSettings();
       }
   
@@ -134,58 +200,3 @@ var app = new Vue({
       
     }
   });
-
-
-
-
-  //loads selected firing schedule for both home page and edit firing schedules page
-$('select[name="fireScheduleListzz"]').change(function () {
-    console.log("SELECT SCHEDULE");
-    if ($(this).val() != "select-schedule") {
-      console.log("Load " + $(this).val());
-      //editSchedule = $(this).val();
-  
-      $.getJSON("api/get-schedule?schedulePath=" + $(this).val(), function (result) {
-        console.log(result);
-        console.log("schedule units = " + result['units']);
-        //loadedSchedule = result;
-        //loadedUnits = result['units'];
-        //$('#schedule-title').text(result['name']);
-        
-        
-        // $('#schedule-body').html('');
-        // for (i = 0; i < result['segments'].length; i++) {
-        //   var newRate = result['segments'][i]['rate'];
-        //   var newTemp = result['segments'][i]['temp'];
-        //   var newHold = result['segments'][i]['hold'];
-        //   var isEdit = window.location.pathname == "/firing-schedules";
-        //   var newSegment = LoadSegment(newRate, newTemp, newHold, isEdit);
-        //   $('#schedule-body').html($('#schedule-body').html() + newSegment);
-        // }
-        // $("#schedule-group").removeClass('d-none');
-      });
-  
-      //Estimate Time
-      UpdateEstimateTime($(this).val());
-  
-    }
-  });
-
-
-//   function LoadSegment(rate, temp, hold, isEdit) {
-//     var html = '<tr :class="{"segment-row" : true, "current-segment" : $(this).index() == firing.segment, "text-light" : $(this).index() == firing.segment}"><td></td><td class="numbersOnly" contenteditable="' + isEdit + '">';
-//     html += rate;
-//     html += '</td><td class="numbersOnly" contenteditable="' + isEdit + '">';
-//     html += temp;
-//     html += '</td><td class="numbersOnly" contenteditable="' + isEdit + '">'
-//     html += hold;
-//     html += '</td>'
-//     if (isEdit) {
-//       html += '<td class="pt-3-half"><span class="table-up mr-2"><a class="badge badge-secondary" href="#!"><i class="fas fa-long-arrow-alt-up" aria-hidden="true"></i></a></span><span class="table-down"><a class="badge badge-secondary" href="#!"><i class="fas fa-long-arrow-alt-down" aria-hidden="true"></i></a></span></td><td><span class="table-remove"><button type="button" class="btn btn-danger btn-rounded btn-sm my-0"><i class="fas fa-trash"></i></button></span></td></tr>';
-//     }
-  
-//     return html;
-//   }
-
-
-  

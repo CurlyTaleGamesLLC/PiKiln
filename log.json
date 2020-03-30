@@ -1,14 +1,12 @@
 {
     "error":"",
     "name":"Test Schedule",
-    "schedule-log":[
+    "scheduleLog":[
         100.0
     ],
-    "start-time":"2020-01-10 20:26:13",
-    "temp-log":[
+    "startTime":"2020-01-10 20:26:13",
+    "tempLog":[
         96.0
     ],
-    "timezone":"Etc/GMT+3",
-    "total-time":"Etc/GMT+3",
     "units":"fahrenheit"
 }

@@ -11,7 +11,7 @@
     
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Back</button>
-                    <button type="button" id="{{ buttonid }}" class="btn btn-danger" data-dismiss="modal">{{ modalbutton|safe }}</button>
+                    <button type="button" id="{{ buttonid }}" class="btn btn-danger" data-dismiss="modal"  v-on:click="{{ modalfunction }}">{{ modalbutton|safe }}</button>
                 </div>
             </div>
         </div>
