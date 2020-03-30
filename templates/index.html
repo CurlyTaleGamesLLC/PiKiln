@@ -16,10 +16,7 @@
         <div id="home-schedule-list" v-bind:class="{'row':true, 'd-none':(firing.status === 'firing')}">
           <div class="col-12">
             <h2>Select Firing Schedule:</h2>
-            <!-- <select class="custom-select" id="fireScheduleList" name="fireScheduleList">
-              <option selected>Select Schedule</option>
-            </select> -->
-            <select class="custom-select" @change="onScheduleSelect($event)">
+            <select id="fireScheduleList" class="custom-select" @change="onScheduleSelect($event)">
                 <option value="select-schedule" selected>Select Schedule</option>';
                 <option v-for="option in scheduleList" v-bind:value="option.path">[[ option.name ]]</option>
               </select>
@@ -68,7 +65,7 @@
         <!--cost estimates-->
         <ul id="home-estimates" v-bind:class="{'list-group':true, 'col-12':true, 'mb-3':true, 'd-none':(firing.status === 'firing')}">
           <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">[[ timeEstimate ]]</span></li>
-          <li v-bind:class="{'list-group-item' : true, 'd-none':(firing.status !== 'firing')}"><b>Estimated Cost:</b> <span id="home-cost">$ [[ cost ]]</span></li>
+          <li v-bind:class="{'list-group-item' : true, 'd-none':(firing.status !== 'firing')}"><b>Estimated Cost:</b> <span id="home-cost">[[ "$" + cost ]]</span></li>
         </ul>
 
         </div>

@@ -1,3 +1,8 @@
+Array.prototype.move = function(from, to) {
+    this.splice(to, 0, this.splice(from, 1)[0]);
+    return this;
+};
+
 var app = new Vue({
     el: '#app',
     data: {
@@ -97,11 +102,19 @@ var app = new Vue({
 
       //load schedule selected from dropdown
       onScheduleSelect: function(event){
-        if (event.target.value != "select-schedule") {
+        var self = this;
+        self.onScheduleSelectPath(event.target.value);
+      },
+
+      onScheduleSelectPath: function(path){
+        if (path != "select-schedule") {
             var self = this;
-            axios.get("/api/get-schedule?schedulePath=" + event.target.value).then(response => {
+            axios.get("/api/get-schedule?schedulePath=" + path).then(response => {
+                self.schedule = [];
                 self.schedule = response.data;
-                self.updateTimeEstimate(event.target.value);
+                self.schedule.path = path;
+
+                self.updateTimeEstimate(path);
                 //forces a refresh of the current status
                 self.getCurrentSegment();
             });
@@ -169,7 +182,123 @@ var app = new Vue({
           self.log = response.data;
           LoadLineGraph(self.log['startTime'], self.log['tempLog'], self.log['scheduleLog']);
         });
-      }
+      },
+
+      //move firing schedule segments up or down
+    move(from, to) {
+        this.schedule.segments.move(from, to);
+    },
+    //delete firing schedule segment
+    remove (index) {
+        this.$delete(this.schedule.segments, index)
+      },
+      //add a firing schedule segment
+    addRow() {
+        var self = this;
+
+        var lastRow;
+        if(self.schedule.segments.length == 0){
+            lastRow = JSON.parse('{"rate":200, "temp":800, "hold":0}');
+        }
+        else{
+            lastRow = JSON.stringify(self.schedule.segments[self.schedule.segments.length - 1]);
+            lastRow = JSON.parse(lastRow);
+        }
+        self.schedule.segments.push(lastRow);
+    },
+    //edit the title of a firing schedule
+    onEditTitle: function(event){
+        var src = event.target.innerHTML;
+        this.schedule.name = src;
+    },
+    //edit the value of the ramp rate, target temp, or hold time of a firing schedule
+    onEdit: function(event, key, index){
+        console.log("EDIT:");
+        console.log(event);
+        console.log(key + " " + index);
+        var src = event.target.innerHTML;
+        this.schedule.segments[index][key] = parseInt(src);
+
+        //hack to break weird bug that rows of the same value are linked together
+        var jsonString = JSON.stringify(this.schedule.segments[index]);
+        this.schedule.segments[index] = JSON.parse(jsonString);
+    },
+    //deselect the editable field for a firing schedule
+    endEdit(){
+        this.$el.querySelector('.editme').blur()
+    },
+    onScheduleSave: function(){
+        var self = this;
+
+        axios.post('/api/save-schedule', self.schedule)
+        .then(response => {
+            console.log(response.data);
+
+            //show schedule saved message for 4 seconds
+            $('#alert-container').html('<div class="alert alert-warning alert-dismissible mt-1" role="alert" id="alert-save-settings"><strong>Schedule Saved!</strong><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>');
+    
+            setTimeout(function () {
+              $('#alert-container').html('')
+            }, 4000);
+        });
+    },
+    onScheduleCreateNew: function(){
+        var self = this;
+
+        axios.post('/api/create-schedule', self.schedule)
+        .then(response => {
+            console.log(response.data);
+
+            var newSchedule = {};
+            newSchedule['name'] = "Untitled Schedule";
+            newSchedule['path'] = response.data['filename'];
+
+            self.scheduleList.push(newSchedule);
+            //give vue a moment to update itself before selecting new schedule
+            setTimeout(function () {
+                $("#fireScheduleList").val(response.data['filename']).change();
+                self.onScheduleSelectPath(response.data['filename']);
+            }, 500);
+
+            
+        });
+    },
+
+    onDeleteSchedule: function(){
+        var self = this;
+
+        if(self.schedule.path == null){return;}
+        
+        axios.delete('/api/delete-schedule?schedulePath=' + self.schedule.path)
+        .then(response => {
+            console.log(response.data);
+
+            for(var i = 0; i < self.scheduleList.length; i++){
+                if(self.scheduleList[i].path == self.schedule.path){
+                    self.$delete(self.scheduleList, i);
+                }
+            }
+            self.schedule = JSON.parse('{"name":"", "path":""}');
+            
+            $("#fireScheduleList").val("select-schedule").change();
+        });
+
+        // $.ajax({
+        //     url: 'api/delete-schedule?schedulePath=' + editSchedule,
+        //     type: 'DELETE',
+        //     success: function (result) {
+        //       console.log(result);
+        //       $("#fireScheduleList").val("select-schedule").change();
+        //       $("#fireScheduleList option[value='" + editSchedule + "']").remove();
+        //       $('#schedule-title').text('');
+        //       $('#schedule-body').html('');
+        //       $("#schedule-group").addClass('d-none');
+        //       editSchedule = null;
+        //     }
+        //   });
+    }
+
+   
   },
     mounted: function () {
       if (window.location.pathname == "/" || window.location.pathname == "/index") {
@@ -179,6 +308,7 @@ var app = new Vue({
       if (window.location.pathname == "/firing-schedules") {
         //edit firing schedules page
         this.getScheduleList();
+        CelsiusConeChart();
       }
       if (window.location.pathname == "/logging") {
         //logging page
