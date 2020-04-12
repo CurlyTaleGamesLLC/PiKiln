@@ -42,7 +42,6 @@ var app = new Vue({
             time:1
         },
         log:[]
-
     },
     delimiters: ['[[', ']]'],
     methods: {
@@ -73,6 +72,31 @@ var app = new Vue({
                     $('#alert-container').html('')
                   }, 4000);
               });
+      },
+
+      incrementZones() { 
+        this.settings.zoneCount++;
+        if(this.settings.zoneCount > 3){
+          this.settings.zoneCount = 3;
+        }
+      },
+      decrementZones() { 
+        this.settings.zoneCount--;
+        if(this.settings.zoneCount < 1){
+          this.settings.zoneCount = 1;
+        }
+      },
+      incrementTemp() { 
+        this.settings.tempCount++;
+        if(this.settings.tempCount > 3){
+          this.settings.tempCount = 3;
+        }
+      },
+      decrementTemp() { 
+        this.settings.tempCount--;
+        if(this.settings.tempCount < 1){
+          this.settings.tempCount = 1;
+        }
       },
   
       //updates the current temperature in the navigation bar and on the home screen during a fire

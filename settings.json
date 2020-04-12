@@ -1,8 +1,20 @@
 {
     "units":"fahrenheit",
     "maxTemp":2500.0,
-    "offsetTemp":4.0,
+    "offsetTemp":0.0,
     "volts":220.0,
     "cost":0.14,
-    "email":""
+    "email":"",
+    "zoneCount":1,
+    "zoneOffsets":[
+        100.0,
+        100.0,
+        100.0
+    ],
+    "tempCount":1,
+    "tempOffsets":[
+        0.0,
+        0.0,
+        0.0
+    ]
 }
