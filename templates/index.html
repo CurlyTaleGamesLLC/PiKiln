@@ -56,15 +56,16 @@
       
 
       <div class="row">
-        <h5 class="col-12 mb-3"><i class="fas fa-thermometer-half"></i> Current Temperature: 
-          <span id="home-current-temperature" v-cloak>[[ cTemp.temp ]]</span><span v-cloak></span>[[ cTemp.units == "celsius" ? "°C" : "°F" ]]</span>
+        <h5 class="col-12 mb-3" v-if="Object.keys(cTemp).length !== 0"><i class="fas fa-thermometer-half"></i> Current Temperature: 
+          <span>[[ cTemp.temp[cTemp.temp.length - 1] ]]</span><span>[[ cTemp.units == "celsius" ? "°C" : "°F" ]]</span>
+          <!-- <span id="home-current-temperature" v-cloak>[[ cTemp.temp ]]</span><span v-cloak></span>[[ cTemp.units == "celsius" ? "°C" : "°F" ]]</span> -->
         </h5>
 
         <div id="time-cost-estimates" v-bind:class="{'col-12' : true, 'd-none':(firing.status === 'firing')}">
         <!--cost estimates-->
         <ul id="home-estimates" v-bind:class="{'list-group':true, 'col-12':true, 'mb-3':true, 'd-none':(firing.status === 'firing')}">
           <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">[[ timeEstimate ]]</span></li>
-          <li v-bind:class="{'list-group-item' : true, 'd-none':(firing.status !== 'firing')}"><b>Estimated Cost:</b> <span id="home-cost">[[ "$" + cost ]]</span></li>
+          <li v-if="schedule.cost" class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">[[ formatCost(schedule.cost) ]]</span></li>
         </ul>
 
         </div>
@@ -87,7 +88,7 @@
           <div class="col-12">
             <ul id="home-summary" class="list-group col-12 mb-4">
               <li class="list-group-item"><b>Total Time:</b> <span id="home-time-summary">[[ timeEstimate ]]</span></li>
-              <li class="list-group-item"><b>Cost:</b> <span id="home-cost-summary">$3.50</span></li>
+              <li v-if="firing.cost" class="list-group-item"><b>Cost:</b> <span id="home-cost-summary">[[ formatCost(firing.cost) ]]</span></li>
             </ul>
           </div>
         </div>

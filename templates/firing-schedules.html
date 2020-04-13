@@ -79,7 +79,7 @@
        <!--cost estimates-->
        <ul id="home-estimates" class="list-group col-12 mb-4">
         <li class="list-group-item"><b>Estimated Time:</b> <span id="home-time">[[ timeEstimate ]]</span></li>
-        <li class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">[[ "$" + cost ]]</span></li>
+        <li v-if="schedule.cost" class="list-group-item"><b>Estimated Cost:</b> <span id="home-cost">[[ formatCost(schedule.cost) ]]</span></li>
       </ul>
 
       <!--add rows and delete firing schedule-->

@@ -24,6 +24,10 @@ def GetEstimateTemp(units):
 	global phases
 	return io_temp.GetTemp(units)
 
+def GetActivePath():
+	global active
+	return active['path']
+
 
 # Convert the ramp, temp, hold schedules to phase segments
 
@@ -177,3 +181,23 @@ def StartFire(filename):
 
 	# fire.start_fire()
 	return jsonify(result=True)
+
+def UpdateActiveCost(fireAmps):
+	global active
+
+	# convert amps used in fire to kilowatts multiplied by the cot per kilowatt
+	fireCost = ((fireAmps * settings.settings['volts']) / 1000.0) * settings.settings['cost']
+	print("Fire Cost: " + str(fireCost))
+	
+	active['cost'] = fireCost
+
+	# get path to json file for active schedule
+	src_file = os.path.join('schedules', active['path'])
+	print(src_file)
+
+	# Write fire cost to json file 
+	with open(src_file, 'w') as f:
+		json.dump(active, f, indent=4, separators=(',', ':'), sort_keys=True)
+		#add trailing newline for POSIX compatibility
+		f.write('\n')
+

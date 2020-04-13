@@ -26,6 +26,8 @@ status = "idle"
 errorMessage = ""
 error = False
 
+ampHours = 0
+
 currentTime = 0.0
 startTime = 0.0
 stop_threads = False
@@ -46,9 +48,11 @@ control = 0.0
 def get_current_temperature():
 	global status
 	if status == "firing":
-		return math.floor((io_temp.GetTemp(fire_active.phases['units']) * 100)/100.0)
+		return io_temp.GetAllTemp(fire_active.phases['units'])
+		# return math.floor((io_temp.GetTemp(fire_active.phases['units']) * 100)/100.0)
 	else:
-		return math.floor((io_temp.GetTemp(settings.settings['units']) * 100)/100.0)
+		return io_temp.GetAllTemp(settings.settings['units'])
+		# return math.floor((io_temp.GetTemp(settings.settings['units']) * 100)/100.0)
 
 def get_current_units():
 	global status
@@ -165,11 +169,11 @@ def DutyCycle(percent):
 	print("LOW")
 	dutyCycleLowLength = dutyCycleLength * (1.0 - percent)
 
-	# Relays need at least 0.1 seconds to switch
-	if dutyCycleLowLength > 0.1:
+	# Relays need at least 0.2 seconds to switch
+	if dutyCycleLowLength > 0.2:
 		io_relay.AllOff()
 		# give the current transformer enough time to read the magnetic field
-		if dutyCycleLowLength > 0.5:
+		if dutyCycleLowLength > 1.0:
 			time.sleep(dutyCycleLowLength / 2)
 			# current sensor is detecting current when there shouldn't be any
 			if io_current.IsConnected():
@@ -184,11 +188,11 @@ def DutyCycle(percent):
 	print("HIGH")
 	dutyCycleHighLength = dutyCycleLength * percent
 
-	# Relays need at least 0.1 seconds to switch
-	if dutyCycleHighLength > 0.1 and not firingComplete:
+	# Relays need at least 0.2 seconds to switch
+	if dutyCycleHighLength > 0.2 and not firingComplete:
 		io_relay.AllOn()
 		# give the current transformer enough time to read the magnetic field
-		if dutyCycleHighLength > 0.5:
+		if dutyCycleHighLength > 1.0:
 			time.sleep(dutyCycleHighLength / 2)
 			# current sensor is not detecting current when there should be
 			# TODO add sampling and check against the average current
@@ -212,6 +216,7 @@ def FireLoop():
 	global v
 	global control
 	global firingComplete 
+	global ampHours
 	
 	firingComplete = False
 
@@ -221,11 +226,17 @@ def FireLoop():
 
 	logCounter = 0
 
+	ampHours = 0
+
 	while not firingComplete:
 		if stop_threads: 
 			io_relay.AllOff()
+
+			ampHours = io_current.StopMeasurement()
+			print("Amp Hours = " + str(ampHours))
+
 			fire_logs.WriteLog()
-			fire_logs.UpdateTotals(0.5, currentTime)
+			fire_logs.UpdateTotals(ampHours, currentTime)
 			print("THREAD STOPPED")
 			break
 
@@ -250,21 +261,16 @@ def FireLoop():
 		# feed the PID output to the system and get its current value
 		v = currentTemp
 
-		print("pid test")
-		print(v)
-		print(control)
-		
-
 		# Log Temperature every 5 duty cycles
 		logCounter += 1
 		if logCounter > 5:
 			logCounter = 0
-			print("LOGGING " + str(currentTemp) + " " + str(targetTemp))
+			# print("LOGGING " + str(currentTemp) + " " + str(targetTemp))
 			fire_logs.AddData(currentTemp, targetTemp)
 			# add amp sensor reading to log
 
 		# firing has completed!
-		print("duration = " + str(currentTime) + " / " + str(fire_active.duration * 3600))
+		# print("duration = " + str(currentTime) + " / " + str(fire_active.duration * 3600))
 		if currentTime > fire_active.duration * 3600:
 			print("FIRING COMPLETE")
 			status = "complete"
@@ -279,8 +285,15 @@ def FireLoop():
 
 			firingComplete = True
 			io_relay.AllOff()
+
+			ampHours = io_current.StopMeasurement()
+			print("Amp Hours = " + str(ampHours))
+
+			fire_active.UpdateActiveCost(ampHours)
+
 			fire_logs.WriteLog()
-			fire_logs.UpdateTotals(0.5, currentTime)
+			fire_logs.UpdateTotals(ampHours, currentTime)
+			
 
 
 def StartFire(filename):
@@ -299,6 +312,9 @@ def StartFire(filename):
 	status = "firing"
 	startTime = time.time()
 
+	# Start measuring the current on a seperate thread in the background
+	io_current.StartMeasurement()
+
 	# Start a Thread to allow firing sequence to run in the background
 	stop_threads = False
 	fireThread = threading.Thread(target = FireLoop) 
@@ -311,7 +327,12 @@ def StopFire():
 	global status
 
 	io_relay.AllOff()
+
+	ampHours = io_current.StopMeasurement()
+	print("Amp Hours = " + str(ampHours))
+
 	fire_logs.WriteLog()
+	fire_logs.UpdateTotals(ampHours, currentTime)
 
 	stop_threads = True
 	try:

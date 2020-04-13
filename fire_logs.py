@@ -71,12 +71,16 @@ def load_totals():
 		totalsData = json.load(getTotals)
 		return jsonify(totalsData)
 
-def UpdateTotals(fireCost, fireTime):
+def UpdateTotals(fireAmps, fireTime):
 	with open ("totals.json", "r") as getTotals:
 		totalsData = json.load(getTotals)
 
 		print("before:")
 		print(totalsData)
+
+		# convert amps used in fire to kilowatts multiplied by the cot per kilowatt
+		fireCost = ((fireAmps * settings.settings['volts']) / 1000.0) * settings.settings['cost']
+		print("Fire Cost: " + str(fireCost))
 
 		totalsData['fires'] += 1
 		totalsData['cost'] += fireCost

@@ -50,7 +50,13 @@ def get_current_segment():
 	# time 
 	newTime = fire.get_total_time()
 
-	return jsonify(name=scheduleName, status=scheduleStatus, segment=segIndex, currentTime=newTime[0], totalTime=newTime[1], error=error)
+	fireCost = 0
+	if scheduleStatus == "complete":
+		fireAmps = fire.ampHours
+		# convert amps used in fire to kilowatts multiplied by the cot per kilowatt
+		fireCost = ((fireAmps * settings.settings['volts']) / 1000.0) * settings.settings['cost']
+
+	return jsonify(name=scheduleName, status=scheduleStatus, segment=segIndex, currentTime=newTime[0], totalTime=newTime[1], error=error, cost=fireCost)
 
 @app.route('/api/temperature')
 def api_temp():

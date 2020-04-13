@@ -104,6 +104,15 @@ var app = new Vue({
         var self = this;
         axios.get("/api/temperature").then(response => {
           self.cTemp = response.data;
+
+          //truncate temperature readings to 2 decimal places
+          //if(self.cTemp.temp.length > 0){
+            for(var i = 0; i < self.cTemp.temp.length; i++){
+              self.cTemp.temp[i] = Math.floor(self.cTemp.temp[i] * 100) / 100;
+            }
+          //}
+          
+
         });
       },
 
